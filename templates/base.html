@@ -53,6 +53,9 @@
 <a href="{{ url_for('calendar_view') }}" class="{% if request.endpoint == 'calendar_view' %}active{% endif %}">
     📅 <span>Calendar</span>
 </a>
+<a href="{{ url_for('logs') }}" class="{% if request.endpoint == 'logs' %}active{% endif %}">
+            📋 <span>Logs</span>
+        </a>
 
         {% if current_user.is_authenticated and current_user.is_staff() %}
         <hr class="sidebar-divider">
