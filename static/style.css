@@ -797,3 +797,22 @@ th:hover { background: #0056b3; }
 .eq-under-maintenance { background: #fff3cd; color: #856404; }
 .eq-broken { background: #f8d7da; color: #721c24; }
 .eq-decommissioned { background: #e2e3e5; color: #383d41; }
+
+.sidebar-nav {
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+}
+/* Minimal sidebar scrollbar */
+.sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.25);
+    border-radius: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.4);
+}
