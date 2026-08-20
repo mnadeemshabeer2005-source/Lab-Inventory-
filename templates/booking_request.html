@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📅 Request a Booking</h1>
+</div>
+
+<div class="confirm-container">
+    <div class="confirm-card" style="max-width:500px;">
+        {% if error %}
+        <div style="background:#fde8e8; border-left:4px solid var(--red); padding:12px; border-radius:6px; margin-bottom:16px; color:var(--red);">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
+            <label style="font-weight:600;">Resource *
+                <select name="resource_id" required>
+                    <option value="">Select resource...</option>
+                    {% for r in resources %}
+                    <option value="{{ r.id }}" {% if prefill.get('resource_id') == r.id|string %}selected{% endif %}>
+                        {{ r.name }}{% if r.description %} — {{ r.description }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label style="font-weight:600;">Date *
+                <input type="date" name="date" required
+                       value="{{ prefill.get('date', '') }}"
+                       min="{{ now_date }}">
+            </label>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <label style="font-weight:600;">Start Time *
+                    <input type="time" name="start_time" required value="{{ prefill.get('start_time', '08:00') }}">
+                </label>
+                <label style="font-weight:600;">End Time *
+                    <input type="time" name="end_time" required value="{{ prefill.get('end_time', '10:00') }}">
+                </label>
+            </div>
+
+            <label style="font-weight:600;">Purpose *
+                <textarea name="purpose" rows="3" required placeholder="e.g. Blood practicals for Year 2 students">{{ prefill.get('purpose', '') }}</textarea>
+            </label>
+
+            <label style="font-weight:600;">Your Name *
+                <input type="text" name="requester_name" required placeholder="Full name"
+                       value="{{ prefill.get('requester_name', '') }}">
+            </label>
+
+            <label style="font-weight:600;">Contact (email or phone)
+                <input type="text" name="requester_contact" placeholder="Optional"
+                       value="{{ prefill.get('requester_contact', '') }}">
+            </label>
+
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button type="submit" class="btn" style="background:var(--green); flex:1;">📨 Submit Request</button>
+                <a href="{{ url_for('calendar_view') }}" class="btn btn-secondary" style="flex:1; text-align:center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

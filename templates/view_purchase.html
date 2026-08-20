@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+    <div>
+        <h1 class="page-title" style="margin-bottom:4px;">🛒 {{ pr.title }}</h1>
+        <p style="color:var(--muted);">Created by {{ pr.created_by }} on {{ pr.created_date.strftime('%d %b %Y') }}</p>
+        {% if pr.notes %}<p>{{ pr.notes }}</p>{% endif %}
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ url_for('print_purchase', req_id=pr.id) }}" target="_blank" class="btn" style="background:#6c757d;">🖨️ Print</a>
+        <a href="{{ url_for('export_purchase_excel', req_id=pr.id) }}" class="btn" style="background:#1d6f42;">📊 Export Excel</a>
+        {% if current_user.is_authenticated and current_user.is_staff() %}
+        <a href="{{ url_for('edit_purchase', req_id=pr.id) }}" class="btn" style="background:var(--blue);">✏️ Edit</a>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+        <a href="{{ url_for('delete_purchase', req_id=pr.id) }}" onclick="return confirm('Delete this purchase request?')" class="btn" style="background:var(--red);">🗑️ Delete</a>
+        {% endif %}
+        <a href="{{ url_for('purchases') }}" class="btn btn-secondary">← Back</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th style="width:25%;">Items to be Purchased</th>
+                <th style="width:10%;">Quantity</th>
+                {% for i in range(max_companies) %}
+                <th>Company {{ i + 1 }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in pr.items %}
+            <tr>
+                <td style="font-weight:600;">{{ loop.index }}. {{ item.item_name }}</td>
+                <td>{{ item.quantity or '-' }}</td>
+                {% for i in range(max_companies) %}
+                <td>
+                    {% if i < item.companies|length %}
+                        {% set company = item.companies[i] %}
+                        {% if company.company_name %}<strong>{{ company.company_name }}</strong><br>{% endif %}
+                        {% if company.description %}<span style="font-size:0.9rem;">{{ company.description }}</span><br>{% endif %}
+                        {% if company.price %}<strong style="color:var(--blue);">{{ company.price }}</strong>{% endif %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

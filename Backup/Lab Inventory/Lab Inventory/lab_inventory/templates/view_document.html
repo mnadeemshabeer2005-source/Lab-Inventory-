@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">👁️ View Document</h1>
+    <a href="{{ url_for('documents') }}" class="btn secondary">← Back to Documents</a>
+</div>
+
+<div class="document-details">
+    <div class="detail-card">
+        <h3>{{ document.title }}</h3>
+        <div class="detail-grid">
+            <div><strong>Category:</strong> {{ document.category or '-' }}</div>
+            <div><strong>File Type:</strong> {{ document.document_type|upper }}</div>
+            <div><strong>Upload Date:</strong> {{ document.upload_date.strftime('%Y-%m-%d %H:%M') }}</div>
+            <div><strong>Uploaded By:</strong> {{ document.uploaded_by }}</div>
+        </div>
+        
+        {% if document.description %}
+        <div class="description">
+            <strong>Description:</strong>
+            <p>{{ document.description }}</p>
+        </div>
+        {% endif %}
+        
+        {% if document.tags %}
+        <div class="tags">
+            <strong>Tags:</strong>
+            {% for tag in document.tags.split(',') %}
+                <span class="tag">{{ tag.strip() }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('download_document', doc_id=document.id) }}" class="btn primary" download>📥 Download File</a>
+            <a href="{{ url_for('delete_document', doc_id=document.id) }}" class="btn delete" onclick="return confirm('Delete this document?')">🗑️ Delete</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.document-details {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.detail-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.description {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.action-buttons {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+</style>
+{% endblock %}

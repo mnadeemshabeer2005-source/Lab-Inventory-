@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Lab Inventory - Chemicals</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
+        h1 { font-size: 18px; margin-bottom: 4px; }
+        p { color: #666; margin-bottom: 16px; font-size: 11px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #28a745; color: white; padding: 8px; text-align: left; font-size: 11px; }
+        td { padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 11px; }
+        tr:nth-child(even) { background: #f7fbff; }
+        .print-btn {
+            background: #28a745; color: white; border: none;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font-size: 13px; margin-bottom: 16px; margin-right: 8px;
+        }
+        .back-btn {
+            background: #6c757d; color: white; border: none;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font-size: 13px; margin-bottom: 16px;
+            text-decoration: none; display: inline-block;
+        }
+        @media print {
+            .print-btn, .back-btn { display: none; }
+            body { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Lab Inventory — Chemicals</h1>
+    <p>Printed on: {{ now }}</p>
+    <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+    <a class="back-btn" href="{{ url_for('chemicals') }}">← Back</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Category</th>
+                <th>Cupboard</th>
+                <th>Shelf</th>
+                <th>Box</th>
+                <th>Volume</th>
+                <th>Expiry Date</th>
+                <th>Safety Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for chem in chemicals %}
+            <tr>
+                <td>{{ chem.name }}</td>
+                <td>{{ chem.quantity }}</td>
+                <td>{{ chem.category or '-' }}</td>
+                <td>{{ chem.cupboard }}</td>
+                <td>{{ chem.shelf or '-' }}</td>
+                <td>{{ chem.box or '-' }}</td>
+                <td>{{ chem.volume or '-' }}</td>
+                <td>{{ chem.expiry_date or '-' }}</td>
+                <td>{{ chem.safety_notes or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+    <div>
+        <h1 class="page-title" style="margin-bottom:4px;">🔬 {{ eq.name }}</h1>
+        <span class="eq-status eq-{{ eq.status | lower | replace(' ', '-') }}">{{ eq.status }}</span>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        {% if current_user.is_authenticated and current_user.is_staff() %}
+        <a href="{{ url_for('edit_equipment', eq_id=eq.id) }}" class="btn" style="background:var(--blue);">✏️ Edit</a>
+        <a href="{{ url_for('add_service_record', eq_id=eq.id) }}" class="btn" style="background:var(--green);">🔧 Add Service Record</a>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+        <a href="{{ url_for('delete_equipment', eq_id=eq.id) }}" onclick="return confirm('Delete this equipment and all its records?')" class="btn" style="background:var(--red);">🗑️ Delete</a>
+        {% endif %}
+        <a href="{{ url_for('equipment') }}" class="btn btn-secondary">← Back</a>
+    </div>
+</div>
+
+<!-- Details -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+    <div class="doc-card" style="flex-direction:column;">
+        <h3 style="margin-bottom:12px; color:var(--blue);">📋 Details</h3>
+        <table style="width:100%; box-shadow:none; margin:0;">
+            <tr><td style="font-weight:600; padding:6px 0; border:none; width:40%;">Model</td><td style="border:none; padding:6px 0;">{{ eq.model or '-' }}</td></tr>
+            <tr><td style="font-weight:600; padding:6px 0; border:none;">Serial No.</td><td style="border:none; padding:6px 0;">{{ eq.serial_number or '-' }}</td></tr>
+            <tr><td style="font-weight:600; padding:6px 0; border:none;">Manufacturer</td><td style="border:none; padding:6px 0;">{{ eq.manufacturer or '-' }}</td></tr>
+            <tr><td style="font-weight:600; padding:6px 0; border:none;">Location</td><td style="border:none; padding:6px 0;">{{ eq.location or '-' }}</td></tr>
+            <tr><td style="font-weight:600; padding:6px 0; border:none;">Purchase Date</td><td style="border:none; padding:6px 0;">{{ eq.purchase_date or '-' }}</td></tr>
+            <tr><td style="font-weight:600; padding:6px 0; border:none;">Warranty</td><td style="border:none; padding:6px 0;">{{ eq.warranty_expiry or '-' }}</td></tr>
+        </table>
+    </div>
+    <div class="doc-card" style="flex-direction:column;">
+        <h3 style="margin-bottom:12px; color:var(--blue);">⚙️ Specs</h3>
+        <p style="white-space:pre-wrap;">{{ eq.specs or 'No specs added.' }}</p>
+        {% if eq.notes %}
+        <h3 style="margin:12px 0 8px; color:var(--blue);">📝 Notes</h3>
+        <p>{{ eq.notes }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Service History -->
+<h3 style="margin-bottom:12px;">🔧 Service History</h3>
+{% if eq.service_records %}
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Performed By</th>
+                <th>Next Service</th>
+                <th>Logged By</th>
+                {% if current_user.is_authenticated and current_user.is_admin() %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in eq.service_records | sort(attribute='service_date', reverse=True) %}
+            <tr>
+                <td>{{ record.service_date }}</td>
+                <td>{{ record.description }}</td>
+                <td>{{ record.performed_by or '-' }}</td>
+                <td>{{ record.next_service_date or '-' }}</td>
+                <td>{{ record.created_by or '-' }}</td>
+                {% if current_user.is_authenticated and current_user.is_admin() %}
+                <td>
+                    <a href="{{ url_for('delete_service_record', record_id=record.id) }}" onclick="return confirm('Delete this record?')" class="btn" style="background:var(--red);">🗑️</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p style="color:var(--muted);">No service records yet.</p>
+{% endif %}
+{% endblock %}

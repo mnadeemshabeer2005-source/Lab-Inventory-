@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Edit Chemical</h2>
+    <form method="POST" class="grid">
+        
+        <label>Name<br>
+            <input type="text" name="name" value="{{ chem.name }}" required>
+        </label>
+
+        <label>Quantity<br>
+            <input type="number" name="quantity" value="{{ chem.quantity }}" required min="0">
+        </label>
+
+        <label>Category<br>
+            <input type="text" name="category" value="{{ chem.category }}">
+        </label>
+
+        <label>Cupboard<br>
+            <input type="text" name="cupboard" value="{{ chem.cupboard }}" required>
+        </label>
+
+        <label>Shelf<br>
+            <input type="text" name="shelf" value="{{ chem.shelf }}">
+        </label>
+
+        <label>Box<br>
+            <input type="text" name="box" value="{{ chem.box }}">
+        </label>
+
+        <label>Volume<br>
+            <input type="text" name="volume" value="{{ chem.volume }}">
+        </label>
+
+        <label>Expiry Date<br>
+            <input type="date" name="expiry_date" value="{{ chem.expiry_date }}">
+        </label>
+
+        <label style="grid-column:1/-1">Safety Notes<br>
+            <textarea name="safety_notes" rows="3" style="width:100%">{{ chem.safety_notes }}</textarea>
+        </label>
+
+        <div>
+            <button class="btn" type="submit">Update</button>
+            <a class="btn" href="{{ url_for('chemicals') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📤 Upload Document</h1>
+    <a href="{{ url_for('documents') }}" class="btn secondary">← Back to Documents</a>
+</div>
+
+<div class="form-container">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>Document Title *</label>
+            <input type="text" name="title" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" rows="3"></textarea>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category">
+                    <option value="">Select Category</option>
+                    <option value="Protocol">Protocol</option>
+                    <option value="SOP">Standard Operating Procedure</option>
+                    <option value="Manual">Equipment Manual</option>
+                    <option value="Report">Lab Report</option>
+                    <option value="Research">Research Paper</option>
+                    <option value="Safety">Safety Data</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Uploaded By</label>
+                <input type="text" name="uploaded_by" value="Admin">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Tags (comma-separated)</label>
+            <input type="text" name="tags" placeholder="e.g., chemistry, protocol, safety">
+        </div>
+        
+        <div class="form-group">
+            <label>Document File *</label>
+            <input type="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png" required>
+            <small>Allowed: PDF, Word, Excel, Text, Images (max 16MB)</small>
+        </div>
+        
+        <button type="submit" class="btn primary">📤 Upload Document</button>
+    </form>
+</div>
+{% endblock %}

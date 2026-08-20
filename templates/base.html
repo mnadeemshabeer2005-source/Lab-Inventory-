@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Inventory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidelay" onclick="document.getElementById('sidebar').classList.remove('open'); this.style.display='none'"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+            <span class="sidebar-title">Lab Inventory</span>
+        </div>
+        <button class="sidebar-close" onclick="document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidelay').style.display='none'">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="sidebar-search">
+            <form method="GET" action="{{ url_for('global_search') }}">
+                <input type="text" name="q" placeholder="🔍 Search..." class="sidebar-search-input">
+            </form>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="{% if request.endpoint == 'home' %}active{% endif %}">
+            🏠 <span>Home</span>
+        </a>
+        <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">
+            📦 <span>Items</span>
+            <span class="badge">{{ item_count }}</span>
+        </a>
+        <a href="{{ url_for('chemicals') }}" class="{% if request.endpoint == 'chemicals' %}active{% endif %}">
+            🧪 <span>Chemicals</span>
+            <span class="badge">{{ chem_count }}</span>
+        </a>
+        <a href="{{ url_for('equipment') }}" class="{% if request.endpoint == 'equipment' %}active{% endif %}">
+    🔬 <span>Equipment</span>
+        </a>
+        <a href="{{ url_for('documents') }}" class="{% if request.endpoint == 'documents' %}active{% endif %}">
+            📄 <span>Documents</span>
+        </a>
+<a href="{{ url_for('purchases') }}" class="{% if request.endpoint == 'purchases' %}active{% endif %}">
+    🛒 <span>Purchases</span>
+</a>
+<a href="{{ url_for('calendar_view') }}" class="{% if request.endpoint == 'calendar_view' %}active{% endif %}">
+    📅 <span>Calendar</span>
+</a>
+
+        {% if current_user.is_authenticated and current_user.is_staff() %}
+        <hr class="sidebar-divider">
+        <a href="{{ url_for('add_item') }}">➕ <span>Add Item</span></a>
+        <a href="{{ url_for('add_chemical') }}">➕ <span>Add Chemical</span></a>
+        <hr class="sidebar-divider">
+        <a href="{{ url_for('export_csv') }}">📥 <span>Export Items</span></a>
+        <a href="{{ url_for('export_chemicals_csv') }}">📥 <span>Export Chemicals</span></a>
+        {% endif %}
+
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+        <hr class="sidebar-divider">
+        <a href="{{ url_for('admin_users') }}">👥 <span>Manage Users</span></a>
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+        <hr class="sidebar-divider">
+        <a href="{{ url_for('logout') }}" style="color:rgba(255,255,255,0.7);">
+            🚪 <span>Logout</span>
+        </a>
+        {% endif %}
+    </nav>
+
+    <button class="darkmode-toggle sidebar-dark" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+</aside>
+
+<!-- Main content -->
+<div class="main-wrapper">
+    <header class="topbar">
+        <button class="nav-toggle" onclick="document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidelay').style.display='block'">☰</button>
+        <span class="topbar-title">Lab Inventory</span>
+        <button class="darkmode-toggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+  }
+  function toggleDark() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkmode', isDark);
+    document.querySelectorAll('.darkmode-toggle').forEach(btn => {
+      btn.textContent = isDark ? '☀️' : '🌙';
+    });
+  }
+  if (localStorage.getItem('darkmode') === 'true') {
+    document.body.classList.add('dark');
+    document.querySelectorAll('.darkmode-toggle').forEach(btn => {
+      btn.textContent = '☀️';
+    });
+  }
+</script>
+</body>
+</html>

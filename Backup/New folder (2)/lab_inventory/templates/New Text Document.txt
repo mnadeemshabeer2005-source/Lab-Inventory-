@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Welcome</h2>
+  <p>Choose what you want to manage:</p>
+  <div style="display:grid; grid-template-columns: 1fr; gap:12px; margin-top:12px;">
+    <a class="btn" href="{{ url_for('index') }}">📦 Items Inventory</a>
+    <a class="btn" href="{{ url_for('chemicals') }}">⚗️ Chemicals Inventory</a>
+  </div>
+</div>
+{% endblock %}

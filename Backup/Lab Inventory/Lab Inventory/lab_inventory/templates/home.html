@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🏠 MSI Lab Inventory </h1>
+    <p class="page-subtitle">Manage your laboratory items and chemicals</p>
+</div>
+
+<!-- Quick Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>📦 {{ total_items }}</h3>
+        <p>Total Items</p>
+    </div>
+    <div class="stat-card">
+        <h3>🧪 {{ total_chemicals }}</h3>
+        <p>Total Chemicals</p>
+    </div>
+    <div class="stat-card">
+        <h3>⚠️ {{ expiring_soon }}</h3>
+        <p>Expiring Soon</p>
+    </div>
+    <div class="stat-card">
+        <h3>📉 {{ low_stock }}</h3>
+        <p>Low Stock</p>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="actions-grid">
+    <a href="{{ url_for('index') }}" class="action-card">
+        <h3>📦 Browse Items</h3>
+        <p>View all laboratory items</p>
+    </a>
+    <a href="{{ url_for('chemicals') }}" class="action-card">
+        <h3>🧪 Browse Chemicals</h3>
+        <p>View all chemicals</p>
+    </a>
+    <a href="{{ url_for('add_item') }}" class="action-card">
+        <h3>➕ Add Item</h3>
+        <p>Add new laboratory item</p>
+    </a>
+    <a href="{{ url_for('add_chemical') }}" class="action-card">
+        <h3>➕ Add Chemical</h3>
+        <p>Add new chemical</p>
+    </a>
+</div>
+
+<!-- Quick Search -->
+<div class="search-section">
+    <h3>🔍 Quick Search</h3>
+    <form method="GET" action="{{ url_for('global_search') }}">
+        <input type="text" name="q" placeholder="Search items or chemicals..." value="{{ request.args.get('q', '') }}">
+        <button type="submit">Search</button>
+    </form>
+    <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
+        Searches: Items, Chemicals, Cupboards, Shelves, and Notes
+    </p>
+</div>
+
+<!-- Developer Notes Section -->
+<div class="notes-section">
+    <h3>📝 Developer Notes</h3>
+    <div class="notes-area" contenteditable="true" style="
+        background: #f8f9fa;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 15px;
+        min-height: 150px;
+        margin: 1rem 0;
+        font-family: inherit;
+    ">
+        <!-- You can type your notes here directly on the page -->
+        ✅ Search now works for both items and chemicals<br>
+        ✅ Homepage stats are working<br>
+        🚧 Need to add expiry alerts<br>
+        🚧 Need low stock warnings<br>
+        💡 Idea: Add barcode support<br>
+        💡 Idea: User authentication system
+    </div>
+    <p style="font-size: 0.9em; color: #666;">
+        Click above to edit notes. These are saved in your browser storage.
+    </p>
+</div>
+
+<!-- Recent Activity -->
+<div class="recent-activity">
+    <h3>📋 Recent Activity</h3>
+    <div class="recent-grid">
+        <div class="recent-section">
+            <h4>Latest Items</h4>
+            {% if recent_items %}
+                {% for item in recent_items %}
+                <div class="recent-item">{{ item.name }} - {{ item.cupboard }}</div>
+                {% endfor %}
+            {% else %}
+                <div class="recent-item" style="color: #999;">No items yet</div>
+            {% endif %}
+        </div>
+        <div class="recent-section">
+            <h4>Latest Chemicals</h4>
+            {% if recent_chemicals %}
+                {% for chem in recent_chemicals %}
+                <div class="recent-item">{{ chem.name }} - {{ chem.cupboard }}</div>
+                {% endfor %}
+            {% else %}
+                <div class="recent-item" style="color: #999;">No chemicals yet</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Simple local storage for notes
+document.addEventListener('DOMContentLoaded', function() {
+    const notesArea = document.querySelector('.notes-area');
+    
+    // Load saved notes
+    const savedNotes = localStorage.getItem('inventory_notes');
+    if (savedNotes) {
+        notesArea.innerHTML = savedNotes;
+    }
+    
+    // Save notes when changed
+    notesArea.addEventListener('input', function() {
+        localStorage.setItem('inventory_notes', notesArea.innerHTML);
+    });
+});
+</script>
+
+<style>
+.notes-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin: 2rem 0;
+}
+
+.notes-area:focus {
+    outline: none;
+    border-color: #007bff !important;
+    background: #fff !important;
+}
+</style>
+{% endblock %}

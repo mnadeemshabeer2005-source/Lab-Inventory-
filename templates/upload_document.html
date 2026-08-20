@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="confirm-container">
+    <div class="confirm-card" style="max-width:550px;">
+        <div class="confirm-icon">📄</div>
+        <h2>Upload Document</h2>
+        <form method="POST" enctype="multipart/form-data" 
+              style="display:flex; flex-direction:column; gap:12px; margin-top:16px; text-align:left;">
+            
+            <label style="font-weight:600;">Document Name *
+                <input type="text" name="name" required placeholder="e.g. CBC Procedure SOP">
+            </label>
+
+            <label style="font-weight:600;">Category *
+    <input type="text" name="category" required placeholder="e.g. Haematology, Safety..." list="category_suggestions">
+    <datalist id="category_suggestions">
+        <option value="Haematology">
+        <option value="Biochemistry">
+        <option value="Procedures">
+        <option value="Safety">
+        <option value="Equipment">
+        <option value="Microbiology">
+        <option value="Histology">
+        <option value="Parasitology">
+        <option value="Other">
+    </datalist>
+</label>
+
+            <label style="font-weight:600;">Description
+                <textarea name="description" rows="3" placeholder="Brief description of this document..."></textarea>
+            </label>
+
+            <label style="font-weight:600;">File (PDF) *
+                <input type="file" name="file" accept=".pdf,.doc,.docx" required>
+            </label>
+
+            <label style="font-weight:600;">Link to Item (optional)
+                <select name="linked_item_id">
+                    <option value="">None</option>
+                    {% for item in items %}
+                        <option value="{{ item.id }}">{{ item.name }} ({{ item.cupboard }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label style="font-weight:600;">Link to Chemical (optional)
+                <select name="linked_chemical_id">
+                    <option value="">None</option>
+                    {% for chem in chemicals %}
+                        <option value="{{ chem.id }}">{{ chem.name }} ({{ chem.cupboard }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button type="submit" class="btn" style="background:var(--green); flex:1;">⬆️ Upload</button>
+                <a href="{{ url_for('documents') }}" class="btn btn-secondary" style="flex:1; text-align:center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

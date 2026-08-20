@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🔧 Add Service Record</h1>
+    <p style="color:var(--muted);">For: {{ eq.name }}</p>
+</div>
+<div class="confirm-container">
+    <div class="confirm-card" style="max-width:500px;">
+        <form method="POST" style="display:flex; flex-direction:column; gap:14px;">
+            <label style="font-weight:600;">Service Date *
+                <input type="date" name="service_date" required>
+            </label>
+            <label style="font-weight:600;">Description *
+                <textarea name="description" rows="4" required placeholder="What was done? e.g. Annual calibration, replaced belt..."></textarea>
+            </label>
+            <label style="font-weight:600;">Performed By
+                <input type="text" name="performed_by" placeholder="e.g. Technician name or company">
+            </label>
+            <label style="font-weight:600;">Next Service Date
+                <input type="date" name="next_service_date">
+            </label>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button type="submit" class="btn" style="background:var(--green); flex:1;">💾 Save Record</button>
+                <a href="{{ url_for('view_equipment', eq_id=eq.id) }}" class="btn btn-secondary" style="flex:1; text-align:center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

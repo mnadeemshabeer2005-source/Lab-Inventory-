@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Add Item</h2>
+    <form method="POST" class="grid">
+        <label>Name<br><input type="text" name="name" required></label>
+        <label>Quantity<br><input type="number" name="quantity" required min="0"></label>
+        <label>Cupboard<br><input type="text" name="cupboard" required placeholder="e.g., C1, Cupboard A"></label>
+        <label>Shelf<br><input type="text" name="shelf" placeholder="e.g., 1, Top, Middle"></label>
+        <label>Box<br><input type="text" name="box" placeholder="e.g., B4, Plastic bin"></label>
+        <label>Expiry Date<br><input type="date" name="expiry_date"></label>
+        <label style="grid-column:1/-1">Notes<br><textarea name="notes" rows="3" style="width:100%"></textarea></label>
+        <div><button class="btn" type="submit">Save</button> <a class="btn" href="{{ url_for('index') }}">Cancel</a></div>
+    </form>
+</div>
+{% endblock %}

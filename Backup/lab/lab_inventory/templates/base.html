@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab Inventory</title>
+    <style>
+        :root { --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#60a5fa; --danger:#ef4444; }
+        *{box-sizing:border-box}
+        body { margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+        .header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
+        .title { font-size: 24px; font-weight:700; }
+        .actions a, .actions button { background: var(--accent); color:#0b1220; padding:10px 14px; border-radius:10px; border:none; cursor:pointer; text-decoration:none; font-weight:600;}
+        .card { background: var(--card); border:1px solid #1f2937; border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); }
+        table { width:100%; border-collapse: collapse; margin-top: 10px; border-radius: 12px; overflow:hidden;}
+        th, td { padding: 10px 12px; border-bottom: 1px solid #1f2937; text-align:left; }
+        th { color:#cbd5e1; font-weight:700; background:#0b1220; position:sticky; top:0; }
+        tr:hover td { background:#0b1220; }
+        a { color: #93c5fd; }
+        .muted { color: var(--muted); }
+        .search { display:flex; gap:8px; }
+        .search input[type="text"] { flex:1; padding:10px 12px; border-radius:10px; border:1px solid #1f2937; background:#0b1220; color:var(--text); }
+        .btn { background:#1f2937; color:#e5e7eb; padding:10px 14px; border-radius:10px; border:1px solid #374151; text-decoration:none; display:inline-block; }
+        .btn:hover { background:#111827; }
+        .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#0b1220; border:1px solid #1f2937; font-size:12px; color:#cbd5e1;}
+        .grid { display:grid; grid-template-columns:1fr; gap:12px; }
+        @media(min-width:900px){ .grid { grid-template-columns:1fr 1fr; } }
+        .danger { color: var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">🧪 Lab Inventory</div>
+            <div class="actions">
+                <a class="btn" href="{{ url_for('export_csv') }}">Export CSV</a>
+                <a class="btn" href="{{ url_for('add_item') }}">+ Add Item</a>
+            </div>
+        </div>
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

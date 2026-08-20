@@ -1,0 +1,270 @@
+/* =========================================
+   Global & Theme
+========================================= */
+:root {
+  --blue: #007bff;
+  --blue-dark: #0056b3;
+  --green: #28a745;
+  --green-dark: #218838;
+  --red: #dc3545;
+  --red-dark: #c82333;
+  --text: #333;
+  --muted: #6b7280;
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --border: #ddd;
+  --shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* =========================================
+   Navbar
+========================================= */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--blue);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin: 12px 20px 20px;
+  box-shadow: var(--shadow);
+}
+.navbar-left { display: flex; align-items: center; gap: 10px; }
+.navbar-left img { height: 48px; width: auto; margin-right: 2px; }
+.navbar-title { font-size: 28px; font-weight: 800; letter-spacing: .2px; }
+
+.navbar-links { display: flex; gap: 10px; flex-wrap: wrap; }
+.navbar-links a {
+  text-decoration: none;
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background .2s ease, color .2s ease;
+}
+.navbar-links a:hover,
+.navbar-links a.active {
+  background: rgba(255,255,255,.2);
+}
+
+/* =========================================
+   Layout / Containers
+========================================= */
+.container {
+  background: var(--card);
+  padding: 20px;
+  margin: 0 20px 24px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+/* Page header (for Items/Chemicals titles) */
+.page-header { text-align: center; margin: 6px 0 16px; }
+.page-title { font-size: 28px; font-weight: 800; color: var(--blue); }
+
+/* =========================================
+   Buttons
+========================================= */
+.btn,
+button {
+  display: inline-block;
+  padding: 8px 14px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, opacity .2s ease;
+}
+.btn:hover, button:hover { background: var(--blue-dark); }
+
+.btn-primary { background: var(--blue); }
+.btn-primary:hover { background: var(--blue-dark); }
+.btn-secondary {
+  background: #e9ecef;
+  color: #111;
+}
+.btn-secondary:hover { background: #dfe3e6; }
+
+.btn-danger { background: var(--red); }
+.btn-danger:hover { background: var(--red-dark); }
+
+a.edit { color: var(--gray); font-weight: 700; text-decoration: none; }
+a.edit:hover { text-decoration: underline; }
+
+a.delete { color: var(--red); font-weight: 700; text-decoration: none; }
+a.delete:hover { text-decoration: underline; }
+
+/* =========================================
+   Forms & Inputs
+========================================= */
+input, select, textarea {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+  transition: border .2s ease, box-shadow .2s ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+}
+
+/* Search bars (support both class names you used) */
+.search-container, .search-bar {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 16px;
+}
+.search-container form, .search-bar form { display: flex; gap: 8px; }
+
+.search-input { width: 320px; }
+
+/* For legacy markup where inputs are direct children */
+.search-bar input[type="text"] { width: 300px; }
+.search-bar input[type="submit"] {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 6px;
+  background: var(--blue);
+  color: white;
+  cursor: pointer;
+}
+.search-bar input[type="submit"]:hover { background: var(--blue-dark); }
+
+/* =========================================
+   Tables
+========================================= */
+/* Fallback generic table (for plain <table>) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+th {
+  background: var(--blue);
+  color: #fff;
+  text-align: left;
+  padding: 12px 14px;
+  font-weight: 700;
+}
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+}
+tr:nth-child(even) { background: #f7fbff; }
+tr:hover { background: #eef5ff; }
+
+/* Modern styled table (for .styled-table) */
+.table-container { overflow-x: auto; }
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.styled-table thead th {
+  background: #f3f6ff;
+  color: #111;
+  border-bottom: 2px solid #e6edff;
+}
+.styled-table th, .styled-table td { padding: 14px 16px; text-align: left; }
+.styled-table tbody tr { border-bottom: 1px solid #eef2f7; }
+.styled-table tbody tr:hover { background: #f7fbff; }
+
+.cupboard-link {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+.cupboard-link:hover { text-decoration: underline; }
+
+.actions { text-align: center; white-space: nowrap; }
+.actions .btn { margin-right: 6px; }
+
+/* =========================================
+   Edit / Add Form Cards
+========================================= */
+.edit-form-container {
+  background: #fff;
+  padding: 22px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  max-width: 900px;
+  margin: 14px auto;
+}
+.edit-form-container h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 12px;
+}
+
+/* Two styles supported: grid or vertical (both wired to your templates) */
+
+/* Grid version (used in updated edit_item earlier) */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+.form-grid label { font-weight: 600; color: #333; display: block; }
+.form-grid textarea { min-height: 90px; resize: vertical; }
+
+/* Vertical version (used in edit_chemical sample) */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #fdfdfd;
+  padding: 18px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+.edit-form label { font-weight: 600; color: #333; }
+.edit-form textarea { min-height: 90px; resize: vertical; }
+
+/* Shared actions */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+.btn-save { background: var(--green); color: #fff; border: none; }
+.btn-save:hover { background: var(--green-dark); }
+.btn-cancel { background: var(--red); color: #fff; text-decoration: none; }
+.btn-cancel:hover { background: var(--red-dark); }
+
+/* =========================================
+   Responsive
+========================================= */
+@media (max-width: 720px) {
+  .navbar { margin: 8px 10px 16px; }
+  .container { margin: 0 10px 18px; padding: 16px; }
+  .navbar-left img { height: 40px; }
+  .navbar-title { font-size: 22px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .search-input { width: 100%; }
+}

@@ -1,0 +1,6 @@
+@echo off
+cd /d "%~dp0"
+echo Starting Lab Inventory System...
+echo Please wait while the server starts...
+python app.py
+pause

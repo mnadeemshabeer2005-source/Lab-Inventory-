@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">✏️ Edit Purchase Request</h1>
+</div>
+
+<div class="container" style="max-width:900px; margin:0 auto;">
+    <form method="POST" id="purchaseForm">
+        <div style="margin-bottom:16px;">
+            <label style="font-weight:600; display:block; margin-bottom:6px;">Request Title *</label>
+            <input type="text" name="title" required value="{{ pr.title }}">
+        </div>
+        <div style="margin-bottom:20px;">
+            <label style="font-weight:600; display:block; margin-bottom:6px;">Notes (optional)</label>
+            <textarea name="notes" rows="2">{{ pr.notes or '' }}</textarea>
+        </div>
+
+        <h3 style="margin-bottom:12px;">Items to Purchase</h3>
+        <div id="itemsContainer">
+            {% for item in pr.items %}
+            <div class="purchase-item-block" id="item_{{ loop.index0 }}">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <h4>Item {{ loop.index }}</h4>
+                    <button type="button" onclick="removeItem('item_{{ loop.index0 }}')" class="btn" style="background:var(--red); padding:4px 10px; font-size:13px;">✕ Remove</button>
+                </div>
+                <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:10px;">
+                    <div>
+                        <label style="font-weight:600;">Item Name *</label>
+                        <input type="text" name="item_name" required value="{{ item.item_name }}">
+                    </div>
+                    <div>
+                        <label style="font-weight:600;">Quantity</label>
+                        <input type="text" name="item_quantity" value="{{ item.quantity or '' }}" placeholder="e.g. 5 nos, 500g">
+                    </div>
+                </div>
+                <div class="companies-container" id="companies_{{ loop.index0 }}">
+                    {% for company in item.companies %}
+                    <div class="company-option-block">
+                        <div style="background:#f8f9fa; border-radius:8px; padding:12px; margin-bottom:10px; border-left:3px solid var(--blue);">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                <strong>Company {{ loop.index }}</strong>
+                                <button type="button" onclick="this.closest('.company-option-block').remove()" class="btn" style="background:var(--red); padding:2px 8px; font-size:12px;">✕</button>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                                <div>
+                                    <label style="font-weight:600; font-size:13px;">Company Name</label>
+                                    <input type="text" name="company_name_{{ loop.index0 }}" value="{{ company.company_name or '' }}">
+                                </div>
+                                <div>
+                                    <label style="font-weight:600; font-size:13px;">Description</label>
+                                    <input type="text" name="description_{{ loop.index0 }}" value="{{ company.description or '' }}">
+                                </div>
+                                <div>
+                                    <label style="font-weight:600; font-size:13px;">Price</label>
+                                    <input type="text" name="price_{{ loop.index0 }}" value="{{ company.price or '' }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" onclick="addCompany({{ loop.index0 }})" class="btn btn-secondary" style="font-size:13px; padding:6px 12px; margin-bottom:12px;">➕ Add Company Option</button>
+                <hr style="margin-bottom:16px;">
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" onclick="addItem()" class="btn btn-secondary" style="margin-bottom:20px;">➕ Add Item</button>
+
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn" style="background:var(--green);">💾 Save Changes</button>
+            <a href="{{ url_for('view_purchase', req_id=pr.id) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+let itemCount = {{ pr.items|length }};
+
+function addItem() {
+    const container = document.getElementById('itemsContainer');
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'purchase-item-block';
+    itemDiv.id = `item_${itemCount}`;
+    itemDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h4>Item ${itemCount + 1}</h4>
+            <button type="button" onclick="removeItem('item_${itemCount}')" class="btn" style="background:var(--red); padding:4px 10px; font-size:13px;">✕ Remove</button>
+        </div>
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+                <label style="font-weight:600;">Item Name *</label>
+                <input type="text" name="item_name" required placeholder="e.g. Glass Burettes">
+            </div>
+            <div>
+                <label style="font-weight:600;">Quantity</label>
+                <input type="text" name="item_quantity" placeholder="e.g. 5 nos, 500g">
+            </div>
+        </div>
+        <div class="companies-container" id="companies_${itemCount}"></div>
+        <button type="button" onclick="addCompany(${itemCount})" class="btn btn-secondary" style="font-size:13px; padding:6px 12px; margin-bottom:12px;">➕ Add Company Option</button>
+        <hr style="margin-bottom:16px;">
+    `;
+    container.appendChild(itemDiv);
+    addCompany(itemCount);
+    itemCount++;
+}
+
+function addCompany(itemIndex) {
+    const container = document.getElementById(`companies_${itemIndex}`);
+    const companyDiv = document.createElement('div');
+    companyDiv.className = 'company-option-block';
+    const companyCount = container.children.length;
+    companyDiv.innerHTML = `
+        <div style="background:#f8f9fa; border-radius:8px; padding:12px; margin-bottom:10px; border-left:3px solid var(--blue);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong>Company ${companyCount + 1}</strong>
+                <button type="button" onclick="this.closest('.company-option-block').remove()" class="btn" style="background:var(--red); padding:2px 8px; font-size:12px;">✕</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                <div>
+                    <label style="font-weight:600; font-size:13px;">Company Name</label>
+                    <input type="text" name="company_name_${itemIndex}" placeholder="e.g. Expographic Books">
+                </div>
+                <div>
+                    <label style="font-weight:600; font-size:13px;">Description</label>
+                    <input type="text" name="description_${itemIndex}" placeholder="Product details...">
+                </div>
+                <div>
+                    <label style="font-weight:600; font-size:13px;">Price</label>
+                    <input type="text" name="price_${itemIndex}" placeholder="e.g. Rs. 5,700/-">
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(companyDiv);
+}
+
+function removeItem(id) {
+    document.getElementById(id).remove();
+}
+</script>
+{% endblock %}

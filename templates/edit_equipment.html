@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">✏️ Edit Equipment</h1>
+</div>
+<div class="edit-form-container">
+    <form method="POST">
+        <div class="form-grid">
+            <label>Name *
+                <input type="text" name="name" required value="{{ eq.name }}">
+            </label>
+            <label>Model
+                <input type="text" name="model" value="{{ eq.model or '' }}">
+            </label>
+            <label>Serial Number
+                <input type="text" name="serial_number" value="{{ eq.serial_number or '' }}">
+            </label>
+            <label>Manufacturer
+                <input type="text" name="manufacturer" value="{{ eq.manufacturer or '' }}">
+            </label>
+            <label>Location
+                <input type="text" name="location" value="{{ eq.location or '' }}">
+            </label>
+            <label>Status
+                <select name="status">
+                    <option value="Working" {% if eq.status == 'Working' %}selected{% endif %}>✅ Working</option>
+                    <option value="Under Maintenance" {% if eq.status == 'Under Maintenance' %}selected{% endif %}>🔧 Under Maintenance</option>
+                    <option value="Broken" {% if eq.status == 'Broken' %}selected{% endif %}>❌ Broken</option>
+                    <option value="Decommissioned" {% if eq.status == 'Decommissioned' %}selected{% endif %}>⛔ Decommissioned</option>
+                </select>
+            </label>
+            <label>Purchase Date
+                <input type="date" name="purchase_date" value="{{ eq.purchase_date or '' }}">
+            </label>
+            <label>Warranty Expiry
+                <input type="date" name="warranty_expiry" value="{{ eq.warranty_expiry or '' }}">
+            </label>
+        </div>
+        <div style="margin-top:14px;">
+            <label>Specs / Technical Details
+                <textarea name="specs" rows="4">{{ eq.specs or '' }}</textarea>
+            </label>
+        </div>
+        <div style="margin-top:14px;">
+            <label>Notes
+                <textarea name="notes" rows="3">{{ eq.notes or '' }}</textarea>
+            </label>
+        </div>
+        <div class="form-actions" style="margin-top:16px;">
+            <button type="submit" class="btn btn-save">💾 Save Changes</button>
+            <a href="{{ url_for('view_equipment', eq_id=eq.id) }}" class="btn btn-cancel">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

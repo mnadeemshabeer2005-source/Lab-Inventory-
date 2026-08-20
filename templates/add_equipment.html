@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🔬 Add Equipment</h1>
+</div>
+<div class="edit-form-container">
+    <form method="POST">
+        <div class="form-grid">
+            <label>Name *
+                <input type="text" name="name" required placeholder="e.g. Centrifuge">
+            </label>
+            <label>Model
+                <input type="text" name="model" placeholder="e.g. SQ9005">
+            </label>
+            <label>Serial Number
+                <input type="text" name="serial_number" placeholder="e.g. SN123456">
+            </label>
+            <label>Manufacturer
+                <input type="text" name="manufacturer" placeholder="e.g. Softa Care">
+            </label>
+            <label>Location
+                <input type="text" name="location" placeholder="e.g. Lab Room 2">
+            </label>
+            <label>Status
+                <select name="status">
+                    <option value="Working">✅ Working</option>
+                    <option value="Under Maintenance">🔧 Under Maintenance</option>
+                    <option value="Broken">❌ Broken</option>
+                    <option value="Decommissioned">⛔ Decommissioned</option>
+                </select>
+            </label>
+            <label>Purchase Date
+                <input type="date" name="purchase_date">
+            </label>
+            <label>Warranty Expiry
+                <input type="date" name="warranty_expiry">
+            </label>
+        </div>
+        <div style="margin-top:14px;">
+            <label>Specs / Technical Details
+                <textarea name="specs" rows="4" placeholder="Technical specifications..."></textarea>
+            </label>
+        </div>
+        <div style="margin-top:14px;">
+            <label>Notes
+                <textarea name="notes" rows="3" placeholder="Any additional notes..."></textarea>
+            </label>
+        </div>
+        <div class="form-actions" style="margin-top:16px;">
+            <button type="submit" class="btn btn-save">💾 Save Equipment</button>
+            <a href="{{ url_for('equipment') }}" class="btn btn-cancel">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

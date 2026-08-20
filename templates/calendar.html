@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+    <h1 class="page-title">📅 Lab Calendar</h1>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ url_for('booking_request') }}" class="btn" style="background:var(--green);">➕ Request Booking</a>
+        {% if current_user.is_authenticated and current_user.is_staff() %}
+        <a href="{{ url_for('booking_admin') }}" class="btn" style="background:var(--blue);">⚙️ Manage Bookings</a>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+        <a href="{{ url_for('manage_resources') }}" class="btn btn-secondary">🔧 Manage Resources</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Resource legend -->
+{% if resources %}
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+    {% for r in resources %}
+    <span style="background:{{ r.color }}; color:#fff; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
+        {{ r.name }}
+    </span>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Calendar navigation -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <button onclick="prevMonth()" class="btn btn-secondary">← Prev</button>
+    <h2 id="monthTitle" style="font-size:1.3rem; font-weight:700;"></h2>
+    <button onclick="nextMonth()" class="btn btn-secondary">Next →</button>
+</div>
+
+<div class="calendar-grid" id="calendarGrid"></div>
+<!-- Booking detail modal -->
+<div id="bookingModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:var(--card); border-radius:12px; padding:24px; max-width:400px; width:90%; position:relative;">
+        <button onclick="closeModal()" style="position:absolute; top:12px; right:12px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--text);">✕</button>
+        <h3 id="modalTitle" style="margin-bottom:12px;"></h3>
+        <div id="modalContent"></div>
+        <a href="{{ url_for('booking_request') }}" id="modalBookBtn" class="btn" style="background:var(--green); margin-top:16px; display:block; text-align:center;">➕ Request this date</a>
+    </div>
+</div>
+
+<script>
+const bookings = {{ bookings_json | safe }};
+let currentDate = new Date();
+let currentMonth = currentDate.getMonth();
+let currentYear = currentDate.getFullYear();
+
+const monthNames = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const title = document.getElementById('monthTitle');
+    title.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const today = new Date();
+
+    let html = '<div class="cal-header"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="cal-body">';
+
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="cal-day empty"></div>';
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const dayBookings = bookings.filter(b => b.date === dateStr);
+        const isToday = today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+        const isPast = new Date(dateStr) < new Date(today.toDateString());
+
+        html += `<div class="cal-day ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}" onclick="showDay('${dateStr}', ${JSON.stringify(dayBookings).replace(/"/g, '&quot;')})">`;
+        html += `<span class="cal-day-num">${day}</span>`;
+        dayBookings.slice(0, 3).forEach(b => {
+            html += `<div class="cal-event" style="background:${b.color};">${b.resource}</div>`;
+        });
+        if (dayBookings.length > 3) {
+            html += `<div class="cal-event-more">+${dayBookings.length - 3} more</div>`;
+        }
+        html += '</div>';
+    }
+
+    html += '</div>';
+    grid.innerHTML = html;
+}
+
+function showDay(dateStr, dayBookings) {
+    const modal = document.getElementById('bookingModal');
+    const title = document.getElementById('modalTitle');
+    const content = document.getElementById('modalContent');
+    const btn = document.getElementById('modalBookBtn');
+
+    const d = new Date(dateStr + 'T00:00:00');
+    title.textContent = d.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    btn.href = `{{ url_for('booking_request') }}?date=${dateStr}`;
+
+    if (dayBookings.length === 0) {
+        content.innerHTML = '<p style="color:var(--green); font-weight:600;">✅ No bookings — this day is free!</p>';
+    } else {
+        let html = '';
+        dayBookings.forEach(b => {
+            html += `<div style="border-left:4px solid ${b.color}; padding:8px 12px; margin-bottom:8px; background:var(--bg); border-radius:4px;">
+                <strong>${b.resource}</strong> · ${b.start_time} - ${b.end_time}<br>
+                <span style="font-size:0.85rem; color:var(--muted);">${b.purpose}</span><br>
+                <span style="font-size:0.85rem;">👤 ${b.title.split(' - ')[1]}</span>
+            </div>`;
+        });
+        content.innerHTML = html;
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('bookingModal').style.display = 'none';
+}
+
+function prevMonth() {
+    currentMonth--;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    renderCalendar();
+}
+
+function nextMonth() {
+    currentMonth++;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderCalendar();
+}
+
+document.getElementById('bookingModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderCalendar();
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+    <h1 class="page-title">⚙️ Manage Bookings</h1>
+    <div style="display:flex; gap:8px;">
+        <a href="{{ url_for('calendar_view') }}" class="btn btn-secondary">📅 View Calendar</a>
+        {% if current_user.is_admin() %}
+        <a href="{{ url_for('manage_resources') }}" class="btn btn-secondary">🔧 Resources</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pending -->
+<h3 style="color:var(--red); margin-bottom:12px;">🔴 Pending Requests ({{ pending|length }})</h3>
+{% if pending %}
+<div class="table-container" style="margin-bottom:30px;">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Resource</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Purpose</th>
+                <th>Requested By</th>
+                <th>Contact</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in pending %}
+            <tr>
+                <td><span style="background:{{ b.resource.color }}; color:#fff; padding:3px 10px; border-radius:12px; font-size:13px;">{{ b.resource.name }}</span></td>
+                <td>{{ b.date }}</td>
+                <td>{{ b.start_time }} - {{ b.end_time }}</td>
+                <td>{{ b.purpose }}</td>
+                <td>{{ b.requester_name }}</td>
+                <td>{{ b.requester_contact or '-' }}</td>
+                <td style="white-space:nowrap;">
+                    <a href="{{ url_for('approve_booking', booking_id=b.id) }}" class="btn" style="background:var(--green); margin-right:4px;">✅ Approve</a>
+                    <a href="{{ url_for('reject_booking', booking_id=b.id) }}" class="btn" style="background:var(--red);">❌ Reject</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p style="color:var(--muted); margin-bottom:30px;">No pending requests.</p>
+{% endif %}
+
+<!-- Approved -->
+<h3 style="color:var(--green); margin-bottom:12px;">🟢 Approved Bookings (recent)</h3>
+{% if approved %}
+<div class="table-container" style="margin-bottom:30px;">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Resource</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Purpose</th>
+                <th>Requested By</th>
+                <th>Approved By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in approved %}
+            <tr>
+                <td><span style="background:{{ b.resource.color }}; color:#fff; padding:3px 10px; border-radius:12px; font-size:13px;">{{ b.resource.name }}</span></td>
+                <td>{{ b.date }}</td>
+                <td>{{ b.start_time }} - {{ b.end_time }}</td>
+                <td>{{ b.purpose }}</td>
+                <td>{{ b.requester_name }}</td>
+                <td>{{ b.reviewed_by or '-' }}</td>
+                <td>
+                    {% if current_user.is_admin() %}
+                    <a href="{{ url_for('delete_booking', booking_id=b.id) }}" onclick="return confirm('Delete this booking?')" class="btn" style="background:var(--red);">🗑️</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Rejected -->
+<h3 style="color:var(--muted); margin-bottom:12px;">⚫ Rejected (recent)</h3>
+{% if rejected %}
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Resource</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Purpose</th>
+                <th>Requested By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in rejected %}
+            <tr style="opacity:0.7;">
+                <td>{{ b.resource.name }}</td>
+                <td>{{ b.date }}</td>
+                <td>{{ b.start_time }} - {{ b.end_time }}</td>
+                <td>{{ b.purpose }}</td>
+                <td>{{ b.requester_name }}</td>
+                <td>
+                    {% if current_user.is_admin() %}
+                    <a href="{{ url_for('delete_booking', booking_id=b.id) }}" onclick="return confirm('Delete?')" class="btn" style="background:var(--red);">🗑️</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

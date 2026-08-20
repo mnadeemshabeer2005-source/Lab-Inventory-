@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📦 Items Inventory</h1>
+</div>
+
+<!-- Search + Filter -->
+<div class="search-container">
+    <form method="GET" action="{{ url_for('index') }}">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input class="search-input" type="text" name="q" placeholder="🔍 Search items..."
+                   value="{{ search }}">
+            
+            <select name="cupboard" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">All Cupboards</option>
+                {% for cupboard_option in cupboards %}
+                    <option value="{{ cupboard_option }}" {% if cupboard_option == cupboard %}selected{% endif %}>
+                        {{ cupboard_option }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <button class="btn primary" type="submit">Search</button>
+            
+            {% if search or cupboard %}
+                <a href="{{ url_for('index') }}" class="btn secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Items Table -->
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Cupboard</th>
+                <th>Shelf</th>
+                <th>Box</th>
+                <th>Expiry</th>
+                <th>Notes</th>
+                <th style="text-align:center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantity }}</td>
+            <td>
+    <a href="{{ url_for('index', cupboard=item.cupboard, q=search) }}" class="cupboard-link">
+        {{ item.cupboard }}
+    </a>
+</td>
+                <td>{{ item.shelf or '-' }}</td>
+                <td>{{ item.box or '-' }}</td>
+                <td>{{ item.expiry_date or '-' }}</td>
+                <td>{{ item.notes or '-' }}</td>
+                <td class="actions">
+                    <a class="btn edit" href="{{ url_for('edit_item', item_id=item.id) }}">✏️ Edit</a>
+                    <a class="btn delete" href="{{ url_for('delete_item', item_id=item.id) }}" onclick="return confirm('Delete this item?')">🗑 Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="text-align:center; color:var(--muted);">
+                    {% if search or cupboard %}No items match your search criteria{% else %}No items found{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

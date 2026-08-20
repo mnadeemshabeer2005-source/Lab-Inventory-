@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📄 Documents & SOPs</h1>
+</div>
+
+<!-- Search and filter -->
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+    <form method="GET" action="{{ url_for('documents') }}" style="display:flex; gap:8px; flex-wrap:wrap; flex:1;">
+        <input type="text" name="search" placeholder="🔍 Search documents..." value="{{ search }}" style="flex:1; min-width:200px;">
+        <select name="category">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+                <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Search</button>
+        {% if search or selected_category %}
+            <a href="{{ url_for('documents') }}" class="btn btn-secondary">Clear</a>
+        {% endif %}
+    </form>
+    {% if current_user.is_authenticated and current_user.is_staff() %}
+    <a href="{{ url_for('upload_document') }}" class="btn btn-sm" style="background:var(--green); align-self:flex-start;">➕ Upload Document</a>
+    {% endif %}
+</div>
+
+<!-- Category quick filters -->
+<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+    <a href="{{ url_for('documents') }}" class="btn btn-secondary" style="font-size:13px;">All</a>
+    {% for cat in categories %}
+    <a href="{{ url_for('documents', category=cat) }}" 
+       class="btn {% if cat == selected_category %}btn-primary{% else %}btn-secondary{% endif %}"
+       style="font-size:13px;">{{ cat }}</a>
+    {% endfor %}
+</div>
+
+<!-- Documents grid -->
+{% if documents %}
+<div class="docs-grid">
+    {% for doc in documents %}
+    <div class="doc-card">
+        <div class="doc-icon">📄</div>
+        <div class="doc-info">
+            <h3>{{ doc.name }}</h3>
+            <span class="role-badge role-viewer">{{ doc.category }}</span>
+            {% if doc.description %}
+                <p class="doc-desc">{{ doc.description }}</p>
+            {% endif %}
+            <p class="doc-meta">
+                Uploaded by {{ doc.uploaded_by }} · {{ doc.upload_date.strftime('%d %b %Y') }}
+            </p>
+            {% if doc.linked_item_id %}
+                <p class="doc-meta">📦 Linked to item</p>
+            {% endif %}
+            {% if doc.linked_chemical_id %}
+                <p class="doc-meta">🧪 Linked to chemical</p>
+            {% endif %}
+        </div>
+        <div class="doc-actions">
+            <a href="{{ doc.file_url }}" target="_blank" class="btn" style="background:var(--blue); font-size:13px;">👁️ View</a>
+            <a href="{{ doc.file_url }}" download class="btn" style="background:var(--green); font-size:13px;">⬇️ Download</a>
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <a href="{{ url_for('delete_document', doc_id=doc.id) }}" 
+               onclick="return confirm('Delete this document?')"
+               class="btn" style="background:var(--red); font-size:13px;">🗑️</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="no-results">
+    <p>No documents found{% if selected_category %} in {{ selected_category }}{% endif %}.</p>
+    {% if current_user.is_authenticated and current_user.is_staff() %}
+    <a href="{{ url_for('upload_document') }}" class="btn" style="margin-top:12px;">➕ Upload your first document</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

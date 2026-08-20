@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h1 class="page-title">🔧 Manage Resources</h1>
+    <div style="display:flex; gap:8px;">
+        <a href="{{ url_for('add_resource') }}" class="btn" style="background:var(--green);">➕ Add Resource</a>
+        <a href="{{ url_for('calendar_view') }}" class="btn btn-secondary">📅 Calendar</a>
+    </div>
+</div>
+
+{% if resources %}
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Color</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in resources %}
+            <tr>
+                <td><span style="background:{{ r.color }}; color:#fff; padding:3px 12px; border-radius:12px; font-weight:600;">{{ r.name }}</span></td>
+                <td>{{ r.description or '-' }}</td>
+                <td><div style="width:30px; height:30px; background:{{ r.color }}; border-radius:6px;"></div></td>
+                <td>
+                    <a href="{{ url_for('delete_resource', resource_id=r.id) }}" onclick="return confirm('Delete {{ r.name }}? All its bookings will also be deleted!')" class="btn" style="background:var(--red);">🗑️ Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="no-results">
+    <p>No resources yet.</p>
+    <a href="{{ url_for('add_resource') }}" class="btn" style="margin-top:12px;">➕ Add your first resource</a>
+</div>
+{% endif %}
+{% endblock %}

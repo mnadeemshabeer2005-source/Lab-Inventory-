@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="confirm-container">
+    <div class="confirm-card" style="text-align:center;">
+        <div style="font-size:3rem; margin-bottom:12px;">✅</div>
+        <h2 style="color:var(--green); margin-bottom:8px;">Request Submitted!</h2>
+        <p style="color:var(--muted); margin-bottom:20px;">Your booking request has been submitted and is pending approval. You'll be notified once it's reviewed.</p>
+        <a href="{{ url_for('calendar_view') }}" class="btn">← Back to Calendar</a>
+    </div>
+</div>
+{% endblock %}

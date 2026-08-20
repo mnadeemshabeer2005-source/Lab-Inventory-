@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📄 Lab Documents</h1>
+    <p class="page-subtitle">Manage laboratory documents, protocols, and reports</p>
+    <a href="{{ url_for('upload_document') }}" class="btn primary">📤 Upload New Document</a>
+</div>
+
+<!-- Search and Filters -->
+<div class="search-filters">
+    <form method="GET" action="{{ url_for('documents') }}">
+        <div class="filter-grid">
+            <input type="text" name="search" placeholder="🔍 Search documents..." value="{{ search }}">
+            
+            <select name="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat }}" {% if cat == category %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+            
+            <select name="type">
+                <option value="">All Types</option>
+                {% for type in types %}
+                    <option value="{{ type }}" {% if type == doc_type %}selected{% endif %}>{{ type|upper }}</option>
+                {% endfor %}
+            </select>
+            
+            <select name="tag">
+                <option value="">All Tags</option>
+                {% for t in tags %}
+                    <option value="{{ t }}" {% if t == tag %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit" class="btn primary">Apply Filters</button>
+            {% if search or category or doc_type or tag %}
+                <a href="{{ url_for('documents') }}" class="btn secondary">Clear All</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Documents Table -->
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Upload Date</th>
+                <th>Tags</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+            <tr>
+                <td><strong>{{ doc.title }}</strong></td>
+                <td>{{ doc.category or '-' }}</td>
+                <td>{{ doc.document_type|upper }}</td>
+                <td>{{ doc.upload_date.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    {% if doc.tags %}
+                        {% for tag in doc.tags.split(',') %}
+                            <span class="tag">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <a href="{{ url_for('download_document', doc_id=doc.id) }}" class="btn primary" download>📥 Download</a>
+                    <a href="{{ url_for('view_document', doc_id=doc.id) }}" class="btn secondary"> View</a>
+                    <a href="{{ url_for('delete_document', doc_id=doc.id) }}" class="btn delete" onclick="return confirm('Delete this document?')">🗑️ Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--muted);">
+                    {% if search or category or doc_type or tag %}
+                        No documents match your search criteria
+                    {% else %}
+                        No documents uploaded yet
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.tag {
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin: 2px;
+    display: inline-block;
+}
+</style>
+{% endblock %}

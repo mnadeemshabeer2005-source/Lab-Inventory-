@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="confirm-container">
+    <div class="confirm-card">
+        <div class="confirm-icon">🔐</div>
+        <h2>Lab Inventory Login</h2>
+        {% if error %}
+            <p style="color:var(--red);">{{ error }}</p>
+        {% endif %}
+        <form method="POST" style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit" class="btn">Login</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

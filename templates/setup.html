@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="confirm-container">
+    <div class="confirm-card">
+        <div class="confirm-icon">⚙️</div>
+        <h2>Create Admin Account</h2>
+        <p>This only runs once to set up your account.</p>
+        <form method="POST" style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
+            <input type="text" name="username" placeholder="Choose a username" required>
+            <input type="password" name="password" placeholder="Choose a password" required>
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

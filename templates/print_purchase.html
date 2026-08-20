@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ pr.title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11px; margin: 20px; }
+        h1 { font-size: 16px; margin-bottom: 4px; }
+        p { color: #666; font-size: 10px; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; border: 2px solid #000; }
+        th { background: #ffd700; color: #000; padding: 8px; text-align: left; font-size: 11px; border: 1px solid #000; font-weight: 800; }
+        td { padding: 8px; border: 1px solid #000; vertical-align: top; font-size: 11px; }
+        td:first-child { font-weight: 600; background: #fffde7; }
+        td:nth-child(2) { text-align: center; background: #f0f8ff; }
+        .price { font-weight: 800; }
+        .print-btn, .back-btn {
+            background: #007bff; color: white; border: none;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font-size: 13px; margin-bottom: 16px; margin-right: 8px;
+            text-decoration: none; display: inline-block;
+        }
+        .back-btn { background: #6c757d; }
+        @media print {
+            .print-btn, .back-btn { display: none; }
+            body { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+    <a class="back-btn" href="javascript:history.back()">← Back</a>
+
+    <h1>{{ pr.title }}</h1>
+    <p>Created by {{ pr.created_by }} · {{ now }}</p>
+    {% if pr.notes %}<p>{{ pr.notes }}</p>{% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>ITEMS TO BE PURCHASED</th>
+                <th>QUANTITY</th>
+                {% for i in range(max_companies) %}
+                <th>COMPANY {{ i + 1 }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in pr.items %}
+            <tr>
+                <td>{{ loop.index }}. {{ item.item_name }}</td>
+                <td>{{ item.quantity or '-' }}</td>
+                {% for i in range(max_companies) %}
+                <td>
+                    {% if i < item.companies|length %}
+                        {% set company = item.companies[i] %}
+                        {% if company.company_name %}<strong>{{ company.company_name }}</strong> - {% endif %}
+                        {% if company.description %}{{ company.description }}{% endif %}
+                        {% if company.price %} - <span class="price">{{ company.price }}</span>{% endif %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

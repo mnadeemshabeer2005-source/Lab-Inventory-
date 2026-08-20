@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Add Chemical</h2>
+  <form method="POST" class="grid">
+      <label>Name<br><input type="text" name="name" required></label>
+      <label>Cupboard<br><input type="text" name="cupboard" required></label>
+      <label>Shelf<br><input type="text" name="shelf"></label>
+      <label>Box<br><input type="text" name="box"></label>
+      <label>Quantity<br><input type="number" name="quantity" min="0" value="0"></label>
+      <label>Volume (optional)<br><input type="text" name="volume" placeholder="e.g., 500 mL"></label>
+      <label>Expiry Date<br><input type="date" name="expiry_date"></label>
+      <label style="grid-column:1/-1">Safety Notes<br><textarea name="safety_notes" rows="3" style="width:100%"></textarea></label>
+      <div><button class="btn" type="submit">Save</button> <a class="btn" href="{{ url_for('chemicals') }}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}

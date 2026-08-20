@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📦 Items Inventory</h1>
+</div>
+
+<!-- Search + Filter -->
+<div class="search-container">
+    <form method="GET" action="{{ url_for('index') }}">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input class="search-input" type="text" name="q" placeholder="🔍 Search items..."
+                   value="{{ search }}">
+            
+            <select name="cupboard" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">All Cupboards</option>
+                {% for cupboard_option in cupboards %}
+                    <option value="{{ cupboard_option }}" {% if cupboard_option == cupboard %}selected{% endif %}>
+                        {{ cupboard_option }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <button class="btn primary" type="submit">Search</button>
+<a href="{{ url_for('print_items', q=search, cupboard=cupboard) }}" target="_blank" class="btn" style="background:#6c757d;">🖨️ Print</a>
+            
+            {% if search or cupboard %}
+                <a href="{{ url_for('index') }}" class="btn secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Items Table -->
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Cupboard</th>
+                <th>Shelf</th>
+                <th>Box</th>
+                <th>Expiry</th>
+                <th>Notes</th>
+                <th style="text-align:center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantity }}</td>
+            <td>
+    <a href="{{ url_for('index', cupboard=item.cupboard, q=search) }}" class="cupboard-link">
+        {{ item.cupboard }}
+    </a>
+</td>
+                <td>{{ item.shelf or '-' }}</td>
+                <td>{{ item.box or '-' }}</td>
+                <td>{{ item.expiry_date or '-' }}</td>
+                <td>{{ item.notes or '-' }}</td>
+                <td style="white-space:nowrap;">
+    <a class="btn" href="{{ url_for('edit_item', item_id=item.id) }}" style="background:var(--blue); margin-right:4px;">✏️ Edit</a>
+    <a class="btn" href="{{ url_for('delete_item', item_id=item.id) }}" style="background:var(--red);">🗑 Delete</a>
+</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="text-align:center; color:var(--muted);">
+                    {% if search or cupboard %}No items match your search criteria{% else %}No items found{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+document.querySelectorAll('.styled-table th, table th').forEach((th, index) => {
+    th.style.cursor = 'pointer';
+    th.title = 'Click to sort';
+    th.addEventListener('click', () => {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const asc = th.dataset.sort !== 'asc';
+        th.dataset.sort = asc ? 'asc' : 'desc';
+
+        // Reset other headers
+        table.querySelectorAll('th').forEach(t => {
+            if (t !== th) t.dataset.sort = '';
+            t.textContent = t.textContent.replace(' ↑', '').replace(' ↓', '');
+        });
+        th.textContent = th.textContent + (asc ? ' ↑' : ' ↓');
+
+        rows.sort((a, b) => {
+            const aText = a.cells[index]?.textContent.trim().toLowerCase() || '';
+            const bText = b.cells[index]?.textContent.trim().toLowerCase() || '';
+            const aNum = parseFloat(aText);
+            const bNum = parseFloat(bText);
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+                return asc ? aNum - bNum : bNum - aNum;
+            }
+            return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    });
+});
+</script>
+{% endblock %}

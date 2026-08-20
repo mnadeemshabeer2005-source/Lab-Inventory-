@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🛒 Purchase Requests</h1>
+</div>
+
+{% if current_user.is_authenticated and current_user.is_staff() %}
+<div style="margin-bottom:16px;">
+    <a href="{{ url_for('new_purchase') }}" class="btn" style="background:var(--green);">➕ New Purchase Request</a>
+</div>
+{% endif %}
+
+{% if requests %}
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Created By</th>
+                <th>Date</th>
+                <th>Items</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td><a href="{{ url_for('view_purchase', req_id=req.id) }}" style="color:var(--blue); font-weight:600;">{{ req.title }}</a></td>
+                <td>{{ req.created_by }}</td>
+                <td>{{ req.created_date.strftime('%d %b %Y') }}</td>
+                <td>{{ req.items|length }} items</td>
+                <td style="white-space:nowrap;">
+                    <a href="{{ url_for('view_purchase', req_id=req.id) }}" class="btn" style="background:var(--blue); margin-right:4px;">👁️ View</a>
+                    <a href="{{ url_for('print_purchase', req_id=req.id) }}" target="_blank" class="btn" style="background:#6c757d; margin-right:4px;">🖨️ Print</a>
+                    {% if current_user.is_authenticated and current_user.is_admin() %}
+                    <a href="{{ url_for('delete_purchase', req_id=req.id) }}" onclick="return confirm('Delete this request?')" class="btn" style="background:var(--red);">🗑️</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="no-results">
+    <p>No purchase requests yet.</p>
+    {% if current_user.is_authenticated and current_user.is_staff() %}
+    <a href="{{ url_for('new_purchase') }}" class="btn" style="margin-top:12px;">➕ Create your first request</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🔍 Search Results</h1>
+    <p class="page-subtitle">Search term: "{{ search_term }}"</p>
+</div>
+
+{% if items or chemicals %}
+    {% if items %}
+    <div class="search-section">
+        <h3>📦 Matching Items ({{ items|length }})</h3>
+        <div class="table-container">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Cupboard</th>
+                        <th>Shelf</th>
+                        <th>Box</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.cupboard }}</td>
+                        <td>{{ item.shelf or '-' }}</td>
+                        <td>{{ item.box or '-' }}</td>
+                        <td>{{ item.notes or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if chemicals %}
+    <div class="search-section">
+        <h3>🧪 Matching Chemicals ({{ chemicals|length }})</h3>
+        <div class="table-container">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Volume</th>
+                        <th>Cupboard</th>
+                        <th>Shelf</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for chem in chemicals %}
+                    <tr>
+                        <td>{{ chem.name }}</td>
+                        <td>{{ chem.category or '-' }}</td>
+                        <td>{{ chem.quantity }}</td>
+                        <td>{{ chem.volume or '-' }}</td>
+                        <td>{{ chem.cupboard }}</td>
+                        <td>{{ chem.shelf or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+{% else %}
+    <div class="no-results">
+        <p>No results found for "{{ search_term }}"</p>
+        <p>Try searching with different terms or check the spelling.</p>
+    </div>
+{% endif %}
+
+<div class="back-link">
+    <a href="{{ url_for('home') }}">← Back to Home</a>
+</div>
+{% endblock %}

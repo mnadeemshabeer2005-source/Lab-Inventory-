@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="confirm-container">
+    <div class="confirm-card">
+        <div class="confirm-icon">🔧</div>
+        <h2>Add Resource</h2>
+        <form method="POST" style="display:flex; flex-direction:column; gap:12px; margin-top:16px; text-align:left;">
+            <label style="font-weight:600;">Resource Name *
+                <input type="text" name="name" required placeholder="e.g. Lab, Incubator, Centrifuge">
+            </label>
+            <label style="font-weight:600;">Description
+                <input type="text" name="description" placeholder="Optional details">
+            </label>
+            <label style="font-weight:600;">Calendar Color
+                <input type="color" name="color" value="#007bff" style="width:60px; height:40px; padding:2px; cursor:pointer;">
+            </label>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button type="submit" class="btn" style="background:var(--green); flex:1;">Add Resource</button>
+                <a href="{{ url_for('manage_resources') }}" class="btn btn-secondary" style="flex:1; text-align:center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

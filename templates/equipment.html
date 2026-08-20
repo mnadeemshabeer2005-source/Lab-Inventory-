@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+    <h1 class="page-title">🔬 Equipment</h1>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ url_for('export_equipment_excel') }}" class="btn" style="background:#1d6f42; align-self:flex-start;">📊 Export Excel</a>
+        {% if current_user.is_authenticated and current_user.is_staff() %}
+        <a href="{{ url_for('add_equipment') }}" class="btn" style="background:var(--green); align-self:flex-start;">➕ Add Equipment</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Search and filter -->
+<form method="GET" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+    <input type="text" name="search" placeholder="🔍 Search equipment..." value="{{ search }}" style="flex:1; min-width:200px;">
+    <select name="status">
+        <option value="">All Status</option>
+        <option value="Working" {% if status == 'Working' %}selected{% endif %}>✅ Working</option>
+        <option value="Under Maintenance" {% if status == 'Under Maintenance' %}selected{% endif %}>🔧 Under Maintenance</option>
+        <option value="Broken" {% if status == 'Broken' %}selected{% endif %}>❌ Broken</option>
+        <option value="Decommissioned" {% if status == 'Decommissioned' %}selected{% endif %}>⛔ Decommissioned</option>
+    </select>
+    <button type="submit" class="btn">Search</button>
+    {% if search or status %}
+    <a href="{{ url_for('equipment') }}" class="btn btn-secondary">Clear</a>
+    {% endif %}
+</form>
+
+{% if equipments %}
+<div class="equipment-grid">
+    {% for eq in equipments %}
+    <a href="{{ url_for('view_equipment', eq_id=eq.id) }}" class="equipment-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+            <h3 style="font-size:1rem; font-weight:700;">{{ eq.name }}</h3>
+            <span class="eq-status eq-{{ eq.status | lower | replace(' ', '-') }}">{{ eq.status }}</span>
+        </div>
+        {% if eq.model %}<p class="doc-meta">Model: {{ eq.model }}</p>{% endif %}
+        {% if eq.manufacturer %}<p class="doc-meta">{{ eq.manufacturer }}</p>{% endif %}
+        {% if eq.location %}<p class="doc-meta">📍 {{ eq.location }}</p>{% endif %}
+        {% if eq.warranty_expiry %}<p class="doc-meta">🛡️ Warranty: {{ eq.warranty_expiry }}</p>{% endif %}
+        <p class="doc-meta" style="margin-top:6px;">🔧 {{ eq.service_records|length }} service record(s)</p>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="no-results">
+    <p>No equipment found.</p>
+    {% if current_user.is_authenticated and current_user.is_staff() %}
+    <a href="{{ url_for('add_equipment') }}" class="btn" style="margin-top:12px;">➕ Add your first equipment</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
