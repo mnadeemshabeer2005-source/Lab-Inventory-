@@ -185,6 +185,36 @@ class ServiceRecord(db.Model):
     def __repr__(self):
         return f"<ServiceRecord {self.equipment_id} {self.service_date}>"
 
+class PracticalLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    practical_name = db.Column(db.String(200), nullable=False)
+    purpose = db.Column(db.String(500))
+    logged_by = db.Column(db.String(80), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.now)
+    items_used = db.relationship('LogItem', backref='log', lazy=True, cascade='all, delete-orphan')
+    chemicals_used = db.relationship('LogChemical', backref='log', lazy=True, cascade='all, delete-orphan')
+    equipment_used = db.relationship('LogEquipment', backref='log', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"<PracticalLog {self.practical_name}>"
+
+class LogItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    log_id = db.Column(db.Integer, db.ForeignKey('practical_log.id'), nullable=False)
+    item_name = db.Column(db.String(100), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+
+class LogChemical(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    log_id = db.Column(db.Integer, db.ForeignKey('practical_log.id'), nullable=False)
+    chemical_name = db.Column(db.String(120), nullable=False)
+    quantity = db.Column(db.String(50), nullable=False)
+
+class LogEquipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    log_id = db.Column(db.Integer, db.ForeignKey('practical_log.id'), nullable=False)
+    equipment_name = db.Column(db.String(100), nullable=False)    
+
     
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -1262,6 +1292,57 @@ def export_equipment_excel():
     filename = f"equipment_list_{datetime.now().strftime('%Y%m%d')}.xlsx"
     return send_file(mem, as_attachment=True, download_name=filename,
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+# ── Practical Logs ────────────────────────────────────────────────────────────
+@app.route('/logs')
+def logs():
+    all_logs = PracticalLog.query.order_by(PracticalLog.date.desc()).all()
+    return render_template('logs.html', logs=all_logs)
+@app.route('/logs/add', methods=['GET', 'POST'])
+def add_log():
+    items = Item.query.order_by(Item.name).all()
+    chemicals = Chemical.query.order_by(Chemical.name).all()
+    equipment = Equipment.query.order_by(Equipment.name).all()
+    if request.method == 'POST':
+        practical_name = request.form.get('practical_name', '').strip()
+        purpose = request.form.get('purpose', '').strip()
+        logged_by = request.form.get('logged_by', '').strip() or 'Guest'
+        if not practical_name:
+            return render_template('add_log.html', items=items, chemicals=chemicals, equipment=equipment, error='Practical name is required.')
+        log = PracticalLog(
+            practical_name=practical_name,
+            purpose=purpose,
+            logged_by=logged_by
+        )
+        db.session.add(log)
+        db.session.flush()
+        # Items
+        item_names = request.form.getlist('item_name[]')
+        item_qtys = request.form.getlist('item_qty[]')
+        for name, qty in zip(item_names, item_qtys):
+            if name.strip():
+                db.session.add(LogItem(log_id=log.id, item_name=name.strip(), quantity=int(qty or 1)))
+        # Chemicals
+        chem_names = request.form.getlist('chem_name[]')
+        chem_qtys = request.form.getlist('chem_qty[]')
+        for name, qty in zip(chem_names, chem_qtys):
+            if name.strip():
+                db.session.add(LogChemical(log_id=log.id, chemical_name=name.strip(), quantity=qty.strip() or '1'))
+        # Equipment
+        equip_names = request.form.getlist('equip_name[]')
+        for name in equip_names:
+            if name.strip():
+                db.session.add(LogEquipment(log_id=log.id, equipment_name=name.strip()))
+        db.session.commit()
+        return redirect(url_for('logs'))
+    return render_template('add_log.html', items=items, chemicals=chemicals, equipment=equipment)
+
+@app.route('/logs/delete/<int:log_id>')
+def delete_log(log_id):
+    log = PracticalLog.query.get_or_404(log_id)
+    db.session.delete(log)
+    db.session.commit()
+    return redirect(url_for('logs'))
 
 
 
