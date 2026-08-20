@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+    <h2>📋 Practical Logs</h2>
+    <a href="{{ url_for('add_log') }}" class="btn">➕ New Log</a>
+</div>
+
+{% if logs %}
+    {% for log in logs %}
+    <div class="card" style="margin-bottom:1.2rem; padding:1.2rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <h3 style="margin:0 0 0.3rem 0;">{{ log.practical_name }}</h3>
+                <small style="opacity:0.6;">
+                    👤 {{ log.logged_by }} &nbsp;|&nbsp; 🕐 {{ log.date.strftime('%d %b %Y, %H:%M') }}
+                </small>
+                {% if log.purpose %}
+                <p style="margin:0.5rem 0 0.8rem 0; opacity:0.85;">{{ log.purpose }}</p>
+                {% endif %}
+            </div>
+            {% if current_user.is_admin() %}
+            <a href="{{ url_for('delete_log', log_id=log.id) }}"
+               onclick="return confirm('Delete this log?')"
+               style="color:#e74c3c; font-size:1.2rem; text-decoration:none;">🗑</a>
+            {% endif %}
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-top:0.8rem;">
+            {% if log.items_used %}
+            <div>
+                <strong>📦 Items</strong>
+                <ul style="margin:0.3rem 0 0 1rem; padding:0;">
+                    {% for i in log.items_used %}
+                    <li>{{ i.item_name }} — qty: {{ i.quantity }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if log.chemicals_used %}
+            <div>
+                <strong>🧪 Chemicals</strong>
+                <ul style="margin:0.3rem 0 0 1rem; padding:0;">
+                    {% for c in log.chemicals_used %}
+                    <li>{{ c.chemical_name }} — {{ c.quantity }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if log.equipment_used %}
+            <div>
+                <strong>🔬 Equipment</strong>
+                <ul style="margin:0.3rem 0 0 1rem; padding:0;">
+                    {% for e in log.equipment_used %}
+                    <li>{{ e.equipment_name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="opacity:0.6;">No logs yet. Add one to get started!</p>
+{% endif %}
+{% endblock %}

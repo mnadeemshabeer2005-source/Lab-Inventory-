@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>➕ New Practical Log</h2>
+
+{% if error %}
+<p style="color:#e74c3c;">{{ error }}</p>
+{% endif %}
+
+<form method="POST" style="max-width:700px;">
+
+    <label>Your Name *</label>
+    <input type="text" name="logged_by" required placeholder="e.g. John Smith" style="width:100%; margin-bottom:1rem;">
+
+    <label>Practical Name *</label>
+    <input type="text" name="practical_name" required placeholder="e.g. Acid-Base Titration" style="width:100%; margin-bottom:1rem;">
+
+    <label>Purpose / Notes</label>
+    <textarea name="purpose" rows="2" placeholder="What was this practical for?" style="width:100%; margin-bottom:1.5rem;"></textarea>
+
+    <!-- Items -->
+    <div style="margin-bottom:1.5rem;">
+        <strong>📦 Items Used</strong>
+        <div id="items-container">
+            <div class="row-entry" style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;">
+                <input type="text" name="item_name[]" list="item-list" placeholder="Item name" style="flex:2;">
+                <input type="number" name="item_qty[]" placeholder="Qty" min="1" value="1" style="flex:1;">
+                <button type="button" onclick="removeRow(this)" style="background:#e74c3c; color:white; border:none; border-radius:4px; padding:0.3rem 0.6rem; cursor:pointer;">✕</button>
+            </div>
+        </div>
+        <datalist id="item-list">
+            {% for item in items %}<option value="{{ item.name }}">{% endfor %}
+        </datalist>
+        <button type="button" onclick="addRow('items-container', 'item-list', 'item_name[]', 'item_qty[]', true)" style="margin-top:0.5rem;">➕ Add Item</button>
+    </div>
+
+    <!-- Chemicals -->
+    <div style="margin-bottom:1.5rem;">
+        <strong>🧪 Chemicals Used</strong>
+        <div id="chems-container">
+            <div class="row-entry" style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;">
+                <input type="text" name="chem_name[]" list="chem-list" placeholder="Chemical name" style="flex:2;">
+                <input type="text" name="chem_qty[]" placeholder="Qty (e.g. 50mL)" style="flex:1;">
+                <button type="button" onclick="removeRow(this)" style="background:#e74c3c; color:white; border:none; border-radius:4px; padding:0.3rem 0.6rem; cursor:pointer;">✕</button>
+            </div>
+        </div>
+        <datalist id="chem-list">
+            {% for chem in chemicals %}<option value="{{ chem.name }}">{% endfor %}
+        </datalist>
+        <button type="button" onclick="addRow('chems-container', 'chem-list', 'chem_name[]', 'chem_qty[]', false)" style="margin-top:0.5rem;">➕ Add Chemical</button>
+    </div>
+
+  <!-- Equipment -->
+<div style="margin-bottom:1.5rem;">
+    <strong>🔬 Equipment Used</strong>
+    <div id="equip-container">
+        <div class="row-entry" style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;">
+            <input type="text" name="equip_name[]" list="equip-list" placeholder="Equipment name" style="flex:1;">
+            <button type="button" onclick="removeRow(this)" style="background:#e74c3c; color:white; border:none; border-radius:4px; padding:0.3rem 0.6rem; cursor:pointer;">✕</button>
+        </div>
+    </div>
+    <datalist id="equip-list">
+        {% for e in equipment %}
+        <option value="{{ e.name }}">
+        {% endfor %}
+    </datalist>
+    <button type="button" onclick="addEquip()" style="margin-top:0.5rem;">➕ Add Equipment</button>
+</div>
+
+    <button type="submit" class="btn" style="width:100%;">Save Log</button>
+</form>
+
+<script>
+function addRow(containerId, listId, nameField, qtyField, isNumber) {
+    const container = document.getElementById(containerId);
+    const div = document.createElement('div');
+    div.className = 'row-entry';
+    div.style = 'display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;';
+    div.innerHTML = `
+        <input type="text" name="${nameField}" list="${listId}" placeholder="Name" style="flex:2;">
+        <input type="${isNumber ? 'number' : 'text'}" name="${qtyField}" placeholder="Qty" ${isNumber ? 'min="1" value="1"' : ''} style="flex:1;">
+        <button type="button" onclick="removeRow(this)" style="background:#e74c3c; color:white; border:none; border-radius:4px; padding:0.3rem 0.6rem; cursor:pointer;">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function addEquip() {
+    const container = document.getElementById('equip-container');
+    const div = document.createElement('div');
+    div.className = 'row-entry';
+    div.style = 'display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;';
+    div.innerHTML = `
+        <input type="text" name="equip_name[]" list="equip-list" placeholder="Equipment name" style="flex:1;">
+        <button type="button" onclick="removeRow(this)" style="background:#e74c3c; color:white; border:none; border-radius:4px; padding:0.3rem 0.6rem; cursor:pointer;">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function removeRow(btn) {
+    btn.parentElement.remove();
+}
+</script>
+{% endblock %}
