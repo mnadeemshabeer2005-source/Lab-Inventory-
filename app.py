@@ -392,16 +392,121 @@ def cupboard_view(cupboard_name):
 def export_csv():
     if not current_user.is_staff():
         return redirect(url_for('home'))
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["ID", "Name", "Quantity", "Cupboard", "Shelf", "Box", "Expiry Date", "Notes"])
-    for it in Item.query.order_by(Item.name.asc()).all():
-        writer.writerow([it.id, it.name, it.quantity, it.cupboard, it.shelf or "", it.box or "", it.expiry_date or "", it.notes or ""])
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    search_term = request.args.get('q', '').strip()
+    cupboard_filter = request.args.get('cupboard', '').strip()
+    query = Item.query
+    if search_term:
+        query = query.filter(
+            or_(Item.name.ilike(f'%{search_term}%'), Item.cupboard.ilike(f'%{search_term}%'),
+                Item.shelf.ilike(f'%{search_term}%'), Item.box.ilike(f'%{search_term}%'),
+                Item.notes.ilike(f'%{search_term}%'))
+        )
+    if cupboard_filter:
+        query = query.filter(Item.cupboard == cupboard_filter)
+    items = query.order_by(Item.cupboard.asc(), Item.name.asc()).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Lab Inventory"
+
+    # Page setup for A4 printing
+    from openpyxl.worksheet.page import PageMargins
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.orientation = 'landscape'
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.print_title_rows = '1:2'
+
+    # Styles
+    title_font = Font(bold=True, size=14, color="FFFFFF")
+    title_fill = PatternFill("solid", fgColor="1A5276")
+    header_font = Font(bold=True, size=10, color="FFFFFF")
+    header_fill = PatternFill("solid", fgColor="2E86C1")
+    border = Border(
+        left=Side(style='thin', color='CCCCCC'),
+        right=Side(style='thin', color='CCCCCC'),
+        top=Side(style='thin', color='CCCCCC'),
+        bottom=Side(style='thin', color='CCCCCC')
+    )
+    center = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    left = Alignment(horizontal='left', vertical='center', wrap_text=True)
+    alt_fill = PatternFill("solid", fgColor="EBF5FB")
+
+    # Title row
+    ws.merge_cells('A1:G1')
+    t = ws['A1']
+    t.value = f"Lab Inventory — Items"
+    t.font = title_font
+    t.fill = title_fill
+    t.alignment = center
+    ws.row_dimensions[1].height = 28
+
+    # Subtitle
+    ws.merge_cells('A2:G2')
+    s = ws['A2']
+    s.value = f"Exported: {datetime.now().strftime('%d %B %Y %I:%M %p')}  |  Total: {len(items)} items"
+    s.font = Font(italic=True, size=9, color="666666")
+    s.alignment = center
+    ws.row_dimensions[2].height = 16
+
+    # Headers
+    headers = ['#', 'Name', 'Quantity', 'Cupboard', 'Shelf', 'Box', 'Expiry Date']
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=3, column=col, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.border = border
+        cell.alignment = center
+    ws.row_dimensions[3].height = 20
+
+    # Data
+    current_cupboard = None
+    cupboard_fill = PatternFill("solid", fgColor="D6EAF8")
+    cupboard_font = Font(bold=True, size=10, color="1A5276")
+
+    data_row = 4
+    for idx, item in enumerate(items, 1):
+        # Cupboard separator row
+        if item.cupboard != current_cupboard:
+            current_cupboard = item.cupboard
+            ws.merge_cells(f'A{data_row}:G{data_row}')
+            sep = ws[f'A{data_row}']
+            sep.value = f"  📦 Cupboard {item.cupboard}"
+            sep.font = cupboard_font
+            sep.fill = cupboard_fill
+            sep.alignment = left
+            sep.border = border
+            ws.row_dimensions[data_row].height = 18
+            data_row += 1
+
+        fill = alt_fill if idx % 2 == 0 else PatternFill()
+        values = [idx, item.name, item.quantity, item.cupboard,
+                  item.shelf or '-', item.box or '-', item.expiry_date or '-']
+        for col, val in enumerate(values, 1):
+            cell = ws.cell(row=data_row, column=col, value=val)
+            cell.border = border
+            cell.fill = fill
+            cell.alignment = center if col in [1, 3, 4, 5, 6, 7] else left
+            cell.font = Font(size=9)
+        ws.row_dimensions[data_row].height = 15
+        data_row += 1
+
+    # Column widths
+    col_widths = [4, 35, 10, 10, 10, 10, 13]
+    for i, w in enumerate(col_widths, 1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+
     mem = io.BytesIO()
-    mem.write(output.getvalue().encode('utf-8'))
+    wb.save(mem)
     mem.seek(0)
-    filename = f"lab_inventory_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    return send_file(mem, as_attachment=True, download_name=filename, mimetype='text/csv')
+    filename = f"lab_items_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return send_file(mem, as_attachment=True, download_name=filename,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @app.route('/chemicals/cupboard/<cupboard_name>')
 def chemicals_cupboard_view(cupboard_name):
@@ -480,21 +585,137 @@ def confirm_delete_chemical(chem_id):
     db.session.commit()
     return redirect(url_for('chemicals'))
 
+# ============================================================
+# REPLACE export_csv route in app.py with this
+# ============================================================
+
+
+
+
+# ============================================================
+# REPLACE export_chemicals_csv route in app.py with this
+# ============================================================
+
 @app.route('/export/chemicals/csv')
 @login_required
 def export_chemicals_csv():
     if not current_user.is_staff():
         return redirect(url_for('home'))
-    output = io.StringIO()
-    w = csv.writer(output)
-    w.writerow(["ID", "Name", "Cupboard", "Shelf", "Box", "Quantity", "Volume", "Expiry Date", "Safety Notes"])
-    for c in Chemical.query.order_by(Chemical.name.asc()).all():
-        w.writerow([c.id, c.name, c.cupboard, c.shelf or "", c.box or "", c.quantity, c.volume or "", c.expiry_date or "", c.safety_notes or ""])
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    search = request.args.get('search', '').strip()
+    cupboard = request.args.get('cupboard', '').strip()
+    category = request.args.get('category', '').strip()
+    query = Chemical.query
+    if search:
+        query = query.filter(
+            or_(Chemical.name.ilike(f"%{search}%"), Chemical.cupboard.ilike(f"%{search}%"),
+                Chemical.shelf.ilike(f"%{search}%"), Chemical.category.ilike(f"%{search}%"))
+        )
+    if cupboard:
+        query = query.filter(Chemical.cupboard == cupboard)
+    if category:
+        query = query.filter(Chemical.category == category)
+    chems = query.order_by(Chemical.category.asc(), Chemical.name.asc()).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Chemicals"
+
+    # Page setup
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.orientation = 'landscape'
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+
+    # Styles matching the uploaded file exactly
+    border = Border(
+        left=Side(style='thin', color='CCCCCC'),
+        right=Side(style='thin', color='CCCCCC'),
+        top=Side(style='thin', color='CCCCCC'),
+        bottom=Side(style='thin', color='CCCCCC')
+    )
+    center = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    left = Alignment(horizontal='left', vertical='center', wrap_text=True)
+
+    header_fill = PatternFill("solid", fgColor="D0D0D0")   # grey header like the file
+    category_fill = PatternFill("solid", fgColor="C1E4F5") # light blue category rows
+    date_fill = PatternFill("solid", fgColor="EAF4FB")     # subtle date row
+
+    # Row 1 — Date exported
+    ws.merge_cells('A1:H1')
+    d = ws['A1']
+    d.value = f"Exported: {datetime.now().strftime('%d %B %Y, %I:%M %p')}   |   Total: {len(chems)} chemicals"
+    d.font = Font(italic=True, size=9, color="666666")
+    d.fill = date_fill
+    d.alignment = left
+    ws.row_dimensions[1].height = 16
+
+    # Row 2 — Column headers (grey, matching file)
+    headers = ['Name', 'Cupboard', 'Shelf', 'Box', 'Quantity', 'Volume', 'Expiry Date', 'Safety Notes']
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=2, column=col, value=h)
+        cell.font = Font(bold=False, size=10)
+        cell.fill = header_fill
+        cell.border = border
+        cell.alignment = center
+    ws.row_dimensions[2].height = 18
+
+    # Group by category
+    data_row = 3
+    grouped = {}
+    for chem in chems:
+        cat = chem.category or 'Other'
+        grouped.setdefault(cat, []).append(chem)
+
+    for cat, cat_chems in grouped.items():
+        # Category separator row (light blue, merged)
+        ws.merge_cells(f'A{data_row}:H{data_row}')
+        cat_cell = ws[f'A{data_row}']
+        cat_cell.value = cat
+        cat_cell.font = Font(size=10)
+        cat_cell.fill = category_fill
+        cat_cell.alignment = left
+        cat_cell.border = border
+        ws.row_dimensions[data_row].height = 16
+        data_row += 1
+
+        for chem in cat_chems:
+            values = [
+                chem.name, chem.cupboard, chem.shelf or '',
+                chem.box or '', chem.quantity, chem.volume or '',
+                chem.expiry_date or '', chem.safety_notes or ''
+            ]
+            for col, val in enumerate(values, 1):
+                cell = ws.cell(row=data_row, column=col, value=val)
+                cell.border = border
+                cell.alignment = left if col == 1 else center
+                cell.font = Font(size=9)
+            ws.row_dimensions[data_row].height = 14
+            data_row += 1
+
+        # Empty spacer row between categories
+        for col in range(1, 9):
+            ws.cell(row=data_row, column=col).border = border
+        ws.row_dimensions[data_row].height = 6
+        data_row += 1
+
+    # Column widths matching the file
+    col_widths = [38, 10, 8, 8, 10, 10, 13, 30]
+    for i, w in enumerate(col_widths, 1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+
     mem = io.BytesIO()
-    mem.write(output.getvalue().encode('utf-8'))
+    wb.save(mem)
     mem.seek(0)
-    filename = f"chemicals_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    return send_file(mem, as_attachment=True, download_name=filename, mimetype='text/csv')
+    filename = f"chemicals_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return send_file(mem, as_attachment=True, download_name=filename,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
 
 # ---------- HOME ----------
 @app.route('/home')
