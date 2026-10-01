@@ -11,7 +11,6 @@ import uuid
 
 
 app = Flask(__name__)
-now = datetime.now().strftime('%Y-%m-%dT%H:%M')
 
 db_url = os.environ.get('DATABASE_URL', 'sqlite:///inventory.db')
 if db_url.startswith('postgres://'):
@@ -1520,6 +1519,7 @@ def logs():
     return render_template('logs.html', logs=all_logs)
 @app.route('/logs/add', methods=['GET', 'POST'])
 def add_log():
+    now = datetime.now().strftime('%Y-%m-%dT%H:%M')
     items = Item.query.order_by(Item.name).all()
     chemicals = Chemical.query.order_by(Chemical.name).all()
     equipment = Equipment.query.order_by(Equipment.name).all()
@@ -1564,7 +1564,10 @@ def add_log():
     return render_template('add_log.html', items=items, chemicals=chemicals, equipment=equipment)
 
 @app.route('/logs/delete/<int:log_id>')
+@login_required
 def delete_log(log_id):
+    if not current_user.is_admin():
+            return redirect(url_for('home'))
     log = PracticalLog.query.get_or_404(log_id)
     db.session.delete(log)
     db.session.commit()
