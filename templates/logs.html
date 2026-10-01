@@ -7,7 +7,7 @@
 
 {% if logs %}
     {% for log in logs %}
-    <div class="card" style="margin-bottom:1.2rem; padding:1.2rem;">
+    <div class="card" style="margin-bottom:1.5rem; padding:1.2rem; border:1px solid rgba(128,128,128,0.25); border-left:4px solid #2E86C1; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
                 <h3 style="margin:0 0 0.3rem 0;">{{ log.practical_name }}</h3>
@@ -25,7 +25,7 @@
             {% endif %}
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-top:0.8rem;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-top:0.8rem; padding-top:0.8rem; border-top:1px solid rgba(128,128,128,0.2);">
             {% if log.items_used %}
             <div>
                 <strong>📦 Items</strong>
