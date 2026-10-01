@@ -11,6 +11,7 @@ import uuid
 
 
 app = Flask(__name__)
+now = datetime.now().strftime('%Y-%m-%dT%H:%M')
 
 db_url = os.environ.get('DATABASE_URL', 'sqlite:///inventory.db')
 if db_url.startswith('postgres://'):
@@ -1523,12 +1524,18 @@ def add_log():
     chemicals = Chemical.query.order_by(Chemical.name).all()
     equipment = Equipment.query.order_by(Equipment.name).all()
     if request.method == 'POST':
+        taken_at_text = request.form.get('taken_at', '').strip()
+        try:
+            taken_at = datetime.strptime(taken_at_text, '%Y-%m-%dT%H:%M')
+        except ValueError:
+            taken_at = datetime.now()
         practical_name = request.form.get('practical_name', '').strip()
         purpose = request.form.get('purpose', '').strip()
         logged_by = request.form.get('logged_by', '').strip() or 'Guest'
         if not practical_name:
             return render_template('add_log.html', items=items, chemicals=chemicals, equipment=equipment, error='Practical name is required.')
         log = PracticalLog(
+            date=taken_at,
             practical_name=practical_name,
             purpose=purpose,
             logged_by=logged_by

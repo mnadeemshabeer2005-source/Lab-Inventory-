@@ -11,6 +11,25 @@
     <label>Your Name *</label>
     <input type="text" name="logged_by" required placeholder="e.g. John Smith" style="width:100%; margin-bottom:1rem;">
 
+    <label>Date &amp; Time Taken *</label>
+<div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+    <input 
+        type="datetime-local" 
+        id="taken_at"
+        name="taken_at" 
+        required
+        style="flex:1;"
+    >
+
+    <button 
+        type="button" 
+        onclick="setCurrentTime()"
+        style="white-space:nowrap;"
+    >
+        🕐 Now
+    </button>
+</div>
+
     <label>Practical Name *</label>
     <input type="text" name="practical_name" required placeholder="e.g. Acid-Base Titration" style="width:100%; margin-bottom:1rem;">
 
@@ -97,6 +116,19 @@ function addEquip() {
 
 function removeRow(btn) {
     btn.parentElement.remove();
+}
+
+function setCurrentTime() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+
+    document.getElementById('taken_at').value =
+        `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 </script>
 {% endblock %}

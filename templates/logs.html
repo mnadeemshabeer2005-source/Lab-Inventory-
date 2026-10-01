@@ -18,7 +18,7 @@
                 <p style="margin:0.5rem 0 0.8rem 0; opacity:0.85;">{{ log.purpose }}</p>
                 {% endif %}
             </div>
-            {% if current_user.is_admin() %}
+            {% if current_user.is_authenticated and current_user.is_admin() %}
             <a href="{{ url_for('delete_log', log_id=log.id) }}"
                onclick="return confirm('Delete this log?')"
                style="color:#e74c3c; font-size:1.2rem; text-decoration:none;">🗑</a>
