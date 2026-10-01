@@ -1331,7 +1331,6 @@ def delete_resource(resource_id):
     return redirect(url_for('manage_resources'))
 # ---------- EQUIPMENT ----------
 @app.route('/equipment')
-@login_required
 def equipment():
     search = request.args.get('search', '').strip()
     status = request.args.get('status', '').strip()
@@ -1376,7 +1375,6 @@ def add_equipment():
     return render_template('add_equipment.html')
 
 @app.route('/equipment/<int:eq_id>')
-@login_required
 def view_equipment(eq_id):
     eq = Equipment.query.get_or_404(eq_id)
     return render_template('view_equipment.html', eq=eq)
