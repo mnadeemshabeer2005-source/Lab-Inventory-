@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lab Inventory</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3">
     <link rel="manifest" href="/static/manifest.json">
     <meta name="theme-color" content="#007bff">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -74,9 +74,15 @@
         {% endif %}
 
         {% if current_user.is_authenticated %}
-        <hr class="sidebar-divider">
+                <hr class="sidebar-divider">
+        {% if current_user.is_authenticated %}
+        <div class="sidebar-user">👤 {{ current_user.username }} <small>({{ current_user.role }})</small></div>
         <a href="{{ url_for('logout') }}" style="color:rgba(255,255,255,0.7);">
             🚪 <span>Logout</span>
+        </a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="{% if request.endpoint == 'login' %}active{% endif %}">
+            🔐 <span>Login</span>
         </a>
         {% endif %}
     </nav>
@@ -95,10 +101,17 @@
         {% endif %}
     </div>
     <header class="topbar">
-        <button class="nav-toggle" onclick="document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidelay').style.display='block'">☰</button>
-        <span class="topbar-title">Lab Inventory</span>
-        <button class="darkmode-toggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
-    </header>
+    <button class="nav-toggle" onclick="document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidelay').style.display='block'">☰</button>
+    <span class="topbar-title">Lab Inventory</span>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('logout') }}" class="topbar-auth-btn"
+       style="flex:none;margin-left:auto;padding:6px 12px;background:rgba(255,255,255,0.25);color:#fff;border-radius:6px;font-weight:600;font-size:13px;text-decoration:none;">Logout</a>
+    {% elif request.endpoint != 'login' %}
+    <a href="{{ url_for('login', next=request.path) }}" class="topbar-auth-btn"
+       style="flex:none;margin-left:auto;padding:6px 12px;background:rgba(255,255,255,0.25);color:#fff;border-radius:6px;font-weight:600;font-size:13px;text-decoration:none;">Login</a>
+    {% endif %}
+    <button class="darkmode-toggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+</header>
 
     <main class="container">
         {% block content %}{% endblock %}
