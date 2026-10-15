@@ -852,3 +852,40 @@ th:hover { background: #0056b3; }
   height: 100vh;
   overflow-y: auto;
 }
+/* ---------- Mobile fixes: keep Logout visible ---------- */
+@media (max-width: 768px) {
+  .topbar {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .nav-toggle { flex: none; }
+
+  /* title shrinks (with ...) instead of pushing buttons off-screen */
+  .topbar-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* buttons stay at their natural size, no auto margins fighting each other */
+  .topbar-auth-btn {
+    flex: none;
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .topbar .darkmode-toggle {
+    flex: none;
+    margin-left: 0;
+  }
+
+  /* sidebar fits the real visible screen so its Logout link can be reached */
+  .sidebar {
+    height: 100dvh;
+    overflow-y: auto;
+    padding-bottom: 24px;
+  }
+}
