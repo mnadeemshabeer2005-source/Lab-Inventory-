@@ -86,6 +86,14 @@
 
 <!-- Main content -->
 <div class="main-wrapper">
+ <div class="desktop-auth">
+        {% if current_user.is_authenticated %}
+            <span class="desktop-auth-user">👤 {{ current_user.username }}</span>
+            <a href="{{ url_for('logout') }}" class="desktop-auth-btn">🚪 Logout</a>
+        {% elif request.endpoint != 'login' %}
+            <a href="{{ url_for('login', next=request.path) }}" class="desktop-auth-btn">🔐 Login</a>
+        {% endif %}
+    </div>
     <header class="topbar">
         <button class="nav-toggle" onclick="document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidelay').style.display='block'">☰</button>
         <span class="topbar-title">Lab Inventory</span>
