@@ -819,13 +819,11 @@ th:hover { background: #0056b3; }
 
 /* ---------- Desktop login button ---------- */
 .desktop-auth {
-  position: fixed;
-  top: 14px;
-  right: 20px;
-  z-index: 900;
   display: flex;
+  justify-content: flex-end;
   align-items: center;
   gap: 10px;
+  padding: 10px 20px 0;
 }
 .desktop-auth-user {
   font-size: 14px;
