@@ -132,7 +132,7 @@ class Resource(db.Model):
     description = db.Column(db.String(300))
     color = db.Column(db.String(20), default='#007bff')
     active = db.Column(db.Boolean, default=True)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=True)   # NEW
+    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=True)
     bookings = db.relationship('Booking', backref='resource', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
@@ -221,15 +221,23 @@ class LogEquipment(db.Model):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    next_url = request.args.get('next') or request.form.get('next') or ''
+    # only allow local redirects (prevents open-redirect attacks)
+    if not next_url.startswith('/') or next_url.startswith('//'):
+        next_url = ''
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].strip()
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('home'))
-        return render_template('login.html', error='Invalid username or password')
-    return render_template('login.html')
+            return redirect(next_url or url_for('home'))
+        return render_template('login.html', error='Invalid username or password', next_url=next_url)
+    if User.query.count() == 0:
+        return redirect(url_for('setup'))
+    return render_template('login.html', next_url=next_url)
 
 @app.route('/logout')
 @login_required
@@ -257,12 +265,12 @@ def create_tables():
 
 with app.app_context():
     db.create_all()
-        # add equipment_id to an existing resource table (create_all doesn't alter tables)
+    # add equipment_id to an existing resource table (create_all doesn't alter tables)
     from sqlalchemy import inspect, text
     _cols = [c['name'] for c in inspect(db.engine).get_columns('resource')]
     if 'equipment_id' not in _cols:
         db.session.execute(text('ALTER TABLE resource ADD COLUMN equipment_id INTEGER'))
-        db.session.commit() 
+        db.session.commit()
     try:
         db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT \'admin\''))
         db.session.commit()
@@ -1213,7 +1221,8 @@ def booking_request():
         purpose = request.form.get('purpose', '').strip()
         requester_name = request.form.get('requester_name', '').strip()
         requester_contact = request.form.get('requester_contact', '').strip()
-                res = Resource.query.get(resource_id)
+
+        res = Resource.query.get(resource_id)
         if res and res.equipment and res.equipment.status != 'Working':
             from datetime import date as date_type
             return render_template('booking_request.html', resources=resources,
@@ -1324,7 +1333,6 @@ def add_resource():
     if not current_user.is_admin():
         return redirect(url_for('calendar_view'))
     if request.method == 'POST':
-        if request.method == 'POST':
         eq_id = request.form.get('equipment_id') or None
         resource = Resource(
             name=request.form.get('name', '').strip(),
@@ -1404,30 +1412,9 @@ def view_equipment(eq_id):
             Booking.status == 'approved',
             Booking.date >= today
         ).order_by(Booking.date.asc(), Booking.start_time.asc()).limit(10).all()
-    return render_template('view_equipment.html', eq=eq, upcoming=upcoming)
-
-@app.route('/equipment/add', methods=['GET', 'POST'])
-@login_required
-def add_equipment():
-    if not current_user.is_staff():
-        return redirect(url_for('equipment'))
-    if request.method == 'POST':
-        eq = Equipment(
-            name=request.form.get('name', '').strip(),
-            model=request.form.get('model', '').strip(),
-            serial_number=request.form.get('serial_number', '').strip(),
-            manufacturer=request.form.get('manufacturer', '').strip(),
-            location=request.form.get('location', '').strip(),
-            purchase_date=request.form.get('purchase_date', '').strip(),
-            warranty_expiry=request.form.get('warranty_expiry', '').strip(),
-            status=request.form.get('status', 'Working').strip(),
-            specs=request.form.get('specs', '').strip(),
-            notes=request.form.get('notes', '').strip()
-        )
-        db.session.add(eq)
-        db.session.commit()
-        return redirect(url_for('equipment'))
-    return render_template('add_equipment.html')
+    free_resources = Resource.query.filter_by(equipment_id=None).all()
+    return render_template('view_equipment.html', eq=eq, upcoming=upcoming,
+                           free_resources=free_resources)
 
 @app.route('/equipment/<int:eq_id>/make_bookable')
 @login_required
@@ -1439,15 +1426,46 @@ def make_equipment_bookable(eq_id):
         db.session.add(Resource(name=eq.name, description=eq.location or '', equipment_id=eq.id))
         db.session.commit()
     return redirect(url_for('view_equipment', eq_id=eq_id))
+
+@app.route('/equipment/<int:eq_id>/link_resource', methods=['POST'])
+@login_required
+def link_resource(eq_id):
+    if not current_user.is_staff():
+        return redirect(url_for('view_equipment', eq_id=eq_id))
+    r = Resource.query.get_or_404(request.form.get('resource_id', type=int))
+    r.equipment_id = eq_id
+    db.session.commit()
+    return redirect(url_for('view_equipment', eq_id=eq_id))
+
+@app.route('/equipment/<int:eq_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_equipment(eq_id):
+    if not current_user.is_staff():
+        return redirect(url_for('equipment'))
+    eq = Equipment.query.get_or_404(eq_id)
+    if request.method == 'POST':
+        eq.name = request.form.get('name', '').strip()
+        eq.model = request.form.get('model', '').strip()
+        eq.serial_number = request.form.get('serial_number', '').strip()
+        eq.manufacturer = request.form.get('manufacturer', '').strip()
+        eq.location = request.form.get('location', '').strip()
+        eq.purchase_date = request.form.get('purchase_date', '').strip()
+        eq.warranty_expiry = request.form.get('warranty_expiry', '').strip()
+        eq.status = request.form.get('status', 'Working').strip()
+        eq.specs = request.form.get('specs', '').strip()
+        eq.notes = request.form.get('notes', '').strip()
+        db.session.commit()
+        return redirect(url_for('view_equipment', eq_id=eq.id))
+    return render_template('edit_equipment.html', eq=eq)
+
 @app.route('/equipment/<int:eq_id>/delete')
 @login_required
 def delete_equipment(eq_id):
     if not current_user.is_admin():
         return redirect(url_for('equipment'))
     eq = Equipment.query.get_or_404(eq_id)
-        for r in eq.resources:
+    for r in eq.resources:
         r.equipment_id = None
-    db.session.delete(eq)
     db.session.delete(eq)
     db.session.commit()
     return redirect(url_for('equipment'))
