@@ -816,3 +816,41 @@ th:hover { background: #0056b3; }
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
     background: rgba(255,255,255,0.4);
 }
+
+/* ---------- Desktop login button ---------- */
+.desktop-auth {
+  position: fixed;
+  top: 14px;
+  right: 20px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.desktop-auth-user {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.desktop-auth-btn {
+  padding: 8px 16px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+.desktop-auth-btn:hover { opacity: 0.9; }
+
+/* The mobile topbar already has its own button */
+@media (max-width: 768px) {
+  .desktop-auth { display: none; }
+}
+
+/* Let the sidebar scroll so Login/Logout is always reachable */
+.sidebar {
+  height: 100vh;
+  overflow-y: auto;
+}
