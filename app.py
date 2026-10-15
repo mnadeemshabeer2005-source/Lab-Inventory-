@@ -132,6 +132,7 @@ class Resource(db.Model):
     description = db.Column(db.String(300))
     color = db.Column(db.String(20), default='#007bff')
     active = db.Column(db.Boolean, default=True)
+    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=True)   # NEW
     bookings = db.relationship('Booking', backref='resource', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
@@ -168,6 +169,7 @@ class Equipment(db.Model):
     specs = db.Column(db.String(1000))
     notes = db.Column(db.String(500))
     service_records = db.relationship('ServiceRecord', backref='equipment', lazy=True, cascade='all, delete-orphan')
+    resources = db.relationship('Resource', backref='equipment', lazy=True)
 
     def __repr__(self):
         return f"<Equipment {self.name}>"
@@ -255,6 +257,12 @@ def create_tables():
 
 with app.app_context():
     db.create_all()
+        # add equipment_id to an existing resource table (create_all doesn't alter tables)
+    from sqlalchemy import inspect, text
+    _cols = [c['name'] for c in inspect(db.engine).get_columns('resource')]
+    if 'equipment_id' not in _cols:
+        db.session.execute(text('ALTER TABLE resource ADD COLUMN equipment_id INTEGER'))
+        db.session.commit() 
     try:
         db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT \'admin\''))
         db.session.commit()
@@ -1205,6 +1213,12 @@ def booking_request():
         purpose = request.form.get('purpose', '').strip()
         requester_name = request.form.get('requester_name', '').strip()
         requester_contact = request.form.get('requester_contact', '').strip()
+                res = Resource.query.get(resource_id)
+        if res and res.equipment and res.equipment.status != 'Working':
+            from datetime import date as date_type
+            return render_template('booking_request.html', resources=resources,
+                                   error=f'{res.equipment.name} is currently "{res.equipment.status}" and cannot be booked.',
+                                   prefill=request.form, now_date=date_type.today().isoformat())
 
         conflicts = Booking.query.filter_by(
             resource_id=resource_id,
@@ -1310,15 +1324,19 @@ def add_resource():
     if not current_user.is_admin():
         return redirect(url_for('calendar_view'))
     if request.method == 'POST':
+        if request.method == 'POST':
+        eq_id = request.form.get('equipment_id') or None
         resource = Resource(
             name=request.form.get('name', '').strip(),
             description=request.form.get('description', '').strip(),
-            color=request.form.get('color', '#007bff')
+            color=request.form.get('color', '#007bff'),
+            equipment_id=int(eq_id) if eq_id else None
         )
         db.session.add(resource)
         db.session.commit()
         return redirect(url_for('manage_resources'))
-    return render_template('add_resource.html')
+    equipments = Equipment.query.order_by(Equipment.name.asc()).all()
+    return render_template('add_resource.html', equipments=equipments)
 
 @app.route('/calendar/resources/delete/<int:resource_id>')
 @login_required
@@ -1377,35 +1395,59 @@ def add_equipment():
 @app.route('/equipment/<int:eq_id>')
 def view_equipment(eq_id):
     eq = Equipment.query.get_or_404(eq_id)
-    return render_template('view_equipment.html', eq=eq)
+    from datetime import date as date_type
+    today = date_type.today().isoformat()
+    upcoming = []
+    for r in eq.resources:
+        upcoming += Booking.query.filter(
+            Booking.resource_id == r.id,
+            Booking.status == 'approved',
+            Booking.date >= today
+        ).order_by(Booking.date.asc(), Booking.start_time.asc()).limit(10).all()
+    return render_template('view_equipment.html', eq=eq, upcoming=upcoming)
 
-@app.route('/equipment/<int:eq_id>/edit', methods=['GET', 'POST'])
+@app.route('/equipment/add', methods=['GET', 'POST'])
 @login_required
-def edit_equipment(eq_id):
+def add_equipment():
     if not current_user.is_staff():
         return redirect(url_for('equipment'))
-    eq = Equipment.query.get_or_404(eq_id)
     if request.method == 'POST':
-        eq.name = request.form.get('name', '').strip()
-        eq.model = request.form.get('model', '').strip()
-        eq.serial_number = request.form.get('serial_number', '').strip()
-        eq.manufacturer = request.form.get('manufacturer', '').strip()
-        eq.location = request.form.get('location', '').strip()
-        eq.purchase_date = request.form.get('purchase_date', '').strip()
-        eq.warranty_expiry = request.form.get('warranty_expiry', '').strip()
-        eq.status = request.form.get('status', 'Working').strip()
-        eq.specs = request.form.get('specs', '').strip()
-        eq.notes = request.form.get('notes', '').strip()
+        eq = Equipment(
+            name=request.form.get('name', '').strip(),
+            model=request.form.get('model', '').strip(),
+            serial_number=request.form.get('serial_number', '').strip(),
+            manufacturer=request.form.get('manufacturer', '').strip(),
+            location=request.form.get('location', '').strip(),
+            purchase_date=request.form.get('purchase_date', '').strip(),
+            warranty_expiry=request.form.get('warranty_expiry', '').strip(),
+            status=request.form.get('status', 'Working').strip(),
+            specs=request.form.get('specs', '').strip(),
+            notes=request.form.get('notes', '').strip()
+        )
+        db.session.add(eq)
         db.session.commit()
-        return redirect(url_for('view_equipment', eq_id=eq.id))
-    return render_template('edit_equipment.html', eq=eq)
+        return redirect(url_for('equipment'))
+    return render_template('add_equipment.html')
 
+@app.route('/equipment/<int:eq_id>/make_bookable')
+@login_required
+def make_equipment_bookable(eq_id):
+    if not current_user.is_staff():
+        return redirect(url_for('view_equipment', eq_id=eq_id))
+    eq = Equipment.query.get_or_404(eq_id)
+    if not eq.resources:
+        db.session.add(Resource(name=eq.name, description=eq.location or '', equipment_id=eq.id))
+        db.session.commit()
+    return redirect(url_for('view_equipment', eq_id=eq_id))
 @app.route('/equipment/<int:eq_id>/delete')
 @login_required
 def delete_equipment(eq_id):
     if not current_user.is_admin():
         return redirect(url_for('equipment'))
     eq = Equipment.query.get_or_404(eq_id)
+        for r in eq.resources:
+        r.equipment_id = None
+    db.session.delete(eq)
     db.session.delete(eq)
     db.session.commit()
     return redirect(url_for('equipment'))
