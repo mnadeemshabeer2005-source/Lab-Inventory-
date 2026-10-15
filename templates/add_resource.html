@@ -5,6 +5,14 @@
         <div class="confirm-icon">🔧</div>
         <h2>Add Resource</h2>
         <form method="POST" style="display:flex; flex-direction:column; gap:12px; margin-top:16px; text-align:left;">
+            <label style="font-weight:600;">Link to Equipment (optional)
+                <select name="equipment_id" id="equipment_id" onchange="fillFromEquipment(this)">
+                    <option value="">— Not linked (e.g. Lab room) —</option>
+                    {% for e in equipments %}
+                    <option value="{{ e.id }}" data-name="{{ e.name }}" data-loc="{{ e.location or '' }}">{{ e.name }}{% if e.model %} ({{ e.model }}){% endif %}</option>
+                    {% endfor %}
+                </select>
+            </label>
             <label style="font-weight:600;">Resource Name *
                 <input type="text" name="name" required placeholder="e.g. Lab, Incubator, Centrifuge">
             </label>
@@ -21,4 +29,14 @@
         </form>
     </div>
 </div>
+<script>
+function fillFromEquipment(sel) {
+    const o = sel.options[sel.selectedIndex];
+    if (!o.value) return;
+    const n = document.querySelector('input[name="name"]');
+    const d = document.querySelector('input[name="description"]');
+    if (!n.value) n.value = o.dataset.name;
+    if (!d.value) d.value = o.dataset.loc;
+}
+</script>
 {% endblock %}

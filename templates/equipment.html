@@ -38,6 +38,7 @@
         {% if eq.manufacturer %}<p class="doc-meta">{{ eq.manufacturer }}</p>{% endif %}
         {% if eq.location %}<p class="doc-meta">📍 {{ eq.location }}</p>{% endif %}
         {% if eq.warranty_expiry %}<p class="doc-meta">🛡️ Warranty: {{ eq.warranty_expiry }}</p>{% endif %}
+        {% if eq.resources %}<p class="doc-meta">📅 Bookable</p>{% endif %}
         <p class="doc-meta" style="margin-top:6px;">🔧 {{ eq.service_records|length }} service record(s)</p>
     </a>
     {% endfor %}

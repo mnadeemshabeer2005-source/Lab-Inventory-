@@ -15,6 +15,7 @@
             <tr>
                 <th>Name</th>
                 <th>Description</th>
+                <th>Equipment</th>
                 <th>Color</th>
                 <th>Actions</th>
             </tr>
@@ -24,6 +25,7 @@
             <tr>
                 <td><span style="background:{{ r.color }}; color:#fff; padding:3px 12px; border-radius:12px; font-weight:600;">{{ r.name }}</span></td>
                 <td>{{ r.description or '-' }}</td>
+                <td>{% if r.equipment %}<a href="{{ url_for('view_equipment', eq_id=r.equipment.id) }}">🔬 {{ r.equipment.name }}</a>{% else %}-{% endif %}</td>
                 <td><div style="width:30px; height:30px; background:{{ r.color }}; border-radius:6px;"></div></td>
                 <td>
                     <a href="{{ url_for('delete_resource', resource_id=r.id) }}" onclick="return confirm('Delete {{ r.name }}? All its bookings will also be deleted!')" class="btn" style="background:var(--red);">🗑️ Delete</a>

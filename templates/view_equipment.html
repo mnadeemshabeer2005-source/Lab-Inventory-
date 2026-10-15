@@ -6,6 +6,9 @@
         <span class="eq-status eq-{{ eq.status | lower | replace(' ', '-') }}">{{ eq.status }}</span>
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        {% if eq.resources and eq.status == 'Working' %}
+        <a href="{{ url_for('booking_request', resource_id=eq.resources[0].id) }}" class="btn" style="background:var(--green);">📅 Book this equipment</a>
+        {% endif %}
         {% if current_user.is_authenticated and current_user.is_staff() %}
         <a href="{{ url_for('edit_equipment', eq_id=eq.id) }}" class="btn" style="background:var(--blue);">✏️ Edit</a>
         <a href="{{ url_for('add_service_record', eq_id=eq.id) }}" class="btn" style="background:var(--green);">🔧 Add Service Record</a>
@@ -39,6 +42,35 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Bookings -->
+<h3 style="margin-bottom:12px;">📅 Upcoming Bookings</h3>
+{% if not eq.resources %}
+    <p style="color:var(--muted);">This equipment is not linked to the booking calendar.
+    {% if current_user.is_authenticated and current_user.is_staff() %}
+        <a href="{{ url_for('make_equipment_bookable', eq_id=eq.id) }}" class="btn" style="background:var(--blue); margin-left:8px;">➕ Make bookable</a>
+    {% endif %}
+    </p>
+{% elif upcoming %}
+<div class="table-container" style="margin-bottom:24px;">
+    <table class="styled-table">
+        <thead><tr><th>Date</th><th>Time</th><th>Purpose</th><th>Booked By</th></tr></thead>
+        <tbody>
+            {% for b in upcoming %}
+            <tr>
+                <td>{{ b.date }}</td>
+                <td>{{ b.start_time }} – {{ b.end_time }}</td>
+                <td>{{ b.purpose }}</td>
+                <td>{{ b.requester_name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    <p style="color:var(--muted); margin-bottom:24px;">No upcoming approved bookings.
+        <a href="{{ url_for('calendar_view') }}">View calendar</a></p>
+{% endif %}
 
 <!-- Service History -->
 <h3 style="margin-bottom:12px;">🔧 Service History</h3>
